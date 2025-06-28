@@ -1,102 +1,134 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:salonix/consts.dart';
+import 'package:salonix/screens/intro_slider_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
+  /// Builds the main UI content for the Welcome Screen.
+  /// This widget is used both for the initial build and for the slide-up animation.
+  static Widget buildWelcomeContent(BuildContext context) {
     final screenHeight = Responsive.screenHeight(context);
     final screenWidth = Responsive.screenWidth(context);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background image
+          // 1. Background image fills the screen.
           Image.asset('assets/welcome.jpg', fit: BoxFit.cover),
 
+          // 2. Linear gradient overlay for better text visibility.
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0x0032373D), // 0% opacity
-                  Color(0xFF32373D), // 100% opacity at 90%
-                  Color(0xFF32373D), // same 100% color from 90% to 100%
+                  Color(0x0032373D), // 0% opacity (top)
+                  Color(0xFF32373D), // 100% opacity at 90% height
+                  Color(0xFF32373D), // 100% opacity for bottom 10%
                 ],
-                stops: [
-                  0.0, // Start at 0% of the height
-                  0.9, // Reach full opacity at 90%
-                  1.0, // Stay full opacity for the last 10%
-                ],
+                stops: [0.0, 0.9, 1.0],
               ),
             ),
           ),
 
-          // Text content over image and gradient
+          // 3. Foreground text content positioned near the bottom.
           SafeArea(
             child: Padding(
               padding: EdgeInsets.only(
-                top: screenHeight * 0.583,
+                top: screenHeight * 0.60, // Position content at ~60% from top
                 left: screenWidth * 0.08,
                 right: screenWidth * 0.08,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'welcome to',
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      fontSize: Responsive.fontSize(context, 0.1),
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.bold,
-                      shadows: const [
-                        Shadow(
-                          color: Colors.white38,
-                          blurRadius: 25,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // salonix title pulled slightly closer
-                  Transform.translate(
-                    offset: Offset(0, -screenHeight * 0.017),
-                    child: Text(
-                      'salonix',
-                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        fontSize: screenHeight * 0.06,
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.bold,
-                        shadows: const [
-                          Shadow(
-                            color: Colors.white38,
-                            blurRadius: 25,
-                            offset: Offset(0, 8),
-                          ),
-                        ],
+                  // "welcome to" title, sized and aligned responsively.
+                  SizedBox(
+                    width: 191.w,
+                    height: 48.h,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'welcome to',
+                        style: Theme.of(context).textTheme.titleMedium!
+                            .copyWith(
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 40.sp,
+                              shadows: const [
+                                Shadow(
+                                  color: Colors.white38,
+                                  blurRadius: 25,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
+                            ),
                       ),
                     ),
                   ),
 
+                  // "salonix" brand name, positioned slightly closer to the previous line.
+                  Transform.translate(
+                    offset: Offset(0, -screenHeight * 0.017),
+                    child: SizedBox(
+                      width: 179.w,
+                      height: 72.h,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'salonix',
+                          style: Theme.of(context).textTheme.titleMedium!
+                              .copyWith(
+                                fontStyle: FontStyle.italic,
+                                fontSize: 70.sp,
+                                fontWeight: FontWeight.bold,
+                                shadows: const [
+                                  Shadow(
+                                    color: Colors.white38,
+                                    blurRadius: 25,
+                                    offset: Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // A little vertical spacing before the subtitle.
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Subtitle text
-                  Text(
-                    'An Establishment That Offers A Variety Of \nCosmetic Treatments And Cosmetic \nServices For Men And Women',
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      fontSize: Responsive.fontSize(context, 0.03),
-                      fontStyle: FontStyle.normal,
-                      shadows: const [
-                        Shadow(
-                          color: Colors.white12,
-                          blurRadius: 10,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+                  // Subtitle - responsive and constrained to 3 lines max.
+                  SizedBox(
+                    width: 341.w,
+                    height: 72.h,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        ' An Establishment That Offers A Variety Of \nCosmetic Treatments And Cosmetic \nServices For Men And Women',
+                        style: Theme.of(context).textTheme.titleMedium!
+                            .copyWith(
+                              fontStyle: FontStyle.normal,
+                              fontSize: 20.sp,
+                              shadows: const [
+                                Shadow(
+                                  color: Colors.white12,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ],
@@ -105,6 +137,52 @@ class WelcomeScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// Navigates to the IntroSliderScreen with a slide-up (move up) animation.
+  /// The WelcomeScreen content slides upward, revealing the new screen underneath.
+  void _goToSliderScreen(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 1200),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const IntroSliderScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // This tween animates the WelcomeScreen out of view, upwards.
+          final slideOut =
+              Tween<Offset>(
+                begin: Offset.zero,
+                end: const Offset(0.0, -1.0),
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+              );
+
+          // Stack: The new screen appears beneath,
+          // the current (welcome) screen slides out above.
+          return Stack(
+            children: [
+              child, // The next screen (IntroSliderScreen)
+              SlideTransition(
+                position: slideOut,
+                child: buildWelcomeContent(
+                  context,
+                ), // Current screen animated up
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // The whole screen is tappable to trigger navigation.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _goToSliderScreen(context),
+      child: buildWelcomeContent(context),
     );
   }
 }

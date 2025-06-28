@@ -39,6 +39,7 @@ dependencies:
   smooth_page_indicator: ^1.2.1
   lucide_icons: ^0.257.0
   auto_size_text: ^3.0.0
+  flutter_screenutil: ^5.8.4
 
 dev_dependencies:
   flutter_test:
