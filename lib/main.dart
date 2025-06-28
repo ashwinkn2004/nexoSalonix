@@ -24,20 +24,18 @@ class MyApp extends StatelessWidget {
         headlineSmall: TextStyle(
           fontSize: Responsive.fontSize(context, 0.18),
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF112D4E),
+          color: Color(0xFF32373D),
         ),
         titleMedium: TextStyle(
           fontSize: Responsive.fontSize(context, 0.08),
           fontWeight: FontWeight.w600,
-          color: const Color(0xFF112D4E),
+          color: const Color(0xFFF4B860),
         ),
         bodyMedium: TextStyle(
           fontSize: Responsive.fontSize(context, 0.10),
           color: const Color(0xFF112D4E),
         ),
-        labelSmall: TextStyle(
-          fontSize: Responsive.fontSize(context, 0.073),
-        ),
+        labelSmall: TextStyle(fontSize: Responsive.fontSize(context, 0.073)),
       ),
     );
 
@@ -48,5 +46,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
