@@ -149,25 +149,24 @@ class WelcomeScreen extends StatelessWidget {
         pageBuilder: (context, animation, secondaryAnimation) =>
             const IntroSliderScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // This tween animates the WelcomeScreen out of view, upwards.
-          final slideOut =
+          // Slide up animation for the NEW screen (IntroSliderScreen)
+          final slideIn =
               Tween<Offset>(
-                begin: Offset.zero,
-                end: const Offset(0.0, -1.0),
+                begin: const Offset(0, 1.0), // Start just below the screen
+                end: Offset.zero, // Slide to normal position
               ).animate(
                 CurvedAnimation(parent: animation, curve: Curves.easeInOut),
               );
 
-          // Stack: The new screen appears beneath,
-          // the current (welcome) screen slides out above.
+          // Optionally: you can fade out the old screen a bit for effect
+          // but here, we'll keep it simple: old screen remains static.
+
           return Stack(
             children: [
-              child, // The next screen (IntroSliderScreen)
+              buildWelcomeContent(context), // Stays static in the back
               SlideTransition(
-                position: slideOut,
-                child: buildWelcomeContent(
-                  context,
-                ), // Current screen animated up
+                position: slideIn,
+                child: child, // The new screen slides up over it
               ),
             ],
           );

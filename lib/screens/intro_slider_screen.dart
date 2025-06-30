@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:salonix/consts.dart';
 import 'package:salonix/screens/home_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
