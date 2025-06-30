@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:salonix/screens/home_screen.dart';
+import 'package:salonix/screens/login_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class IntroSliderScreen extends ConsumerStatefulWidget {
@@ -42,7 +42,7 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     }
   }
