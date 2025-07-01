@@ -3,6 +3,68 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+// 1. Riverpod form state
+final profileFormProvider =
+    StateNotifierProvider<ProfileFormNotifier, ProfileFormState>((ref) {
+      return ProfileFormNotifier();
+    });
+
+class ProfileFormState {
+  final String name;
+  final String email;
+  final String dob;
+  final String city;
+  final String phone;
+  final String gender;
+
+  ProfileFormState({
+    this.name = '',
+    this.email = '',
+    this.dob = '',
+    this.city = '',
+    this.phone = '',
+    this.gender = '',
+  });
+
+  ProfileFormState copyWith({
+    String? name,
+    String? email,
+    String? dob,
+    String? city,
+    String? phone,
+    String? gender,
+  }) => ProfileFormState(
+    name: name ?? this.name,
+    email: email ?? this.email,
+    dob: dob ?? this.dob,
+    city: city ?? this.city,
+    phone: phone ?? this.phone,
+    gender: gender ?? this.gender,
+  );
+}
+
+class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
+  ProfileFormNotifier() : super(ProfileFormState());
+
+  void update({
+    String? name,
+    String? email,
+    String? dob,
+    String? city,
+    String? phone,
+    String? gender,
+  }) {
+    state = state.copyWith(
+      name: name,
+      email: email,
+      dob: dob,
+      city: city,
+      phone: phone,
+      gender: gender,
+    );
+  }
+}
+
 class FillYourInfoScreen extends ConsumerWidget {
   const FillYourInfoScreen({super.key});
 
@@ -10,6 +72,8 @@ class FillYourInfoScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final screenHeight = 1.sh;
     final avatarSize = 86.w;
+    final form = ref.watch(profileFormProvider);
+    final notifier = ref.read(profileFormProvider.notifier);
 
     return SafeArea(
       child: Scaffold(
@@ -87,39 +151,112 @@ class FillYourInfoScreen extends ConsumerWidget {
                 SizedBox(height: screenHeight * 0.038),
 
                 // --- FORM FIELDS ---
-                _ProfileInputField(hint: 'Name', icon: Icons.person_outline),
+                _ProfileInputField(
+                  hint: 'Name',
+                  controllerValue: form.name,
+                  onChanged: (val) => notifier.update(name: val),
+                ),
                 SizedBox(height: 16.h),
-                _ProfileInputField(hint: 'Email', icon: Icons.email_outlined),
+
+                _ProfileInputField(
+                  hint: 'Email',
+                  controllerValue: form.email,
+                  onChanged: (val) => notifier.update(email: val),
+                  keyboardType: TextInputType.emailAddress,
+                ),
                 SizedBox(height: 16.h),
+
                 _ProfileInputField(
                   hint: 'Date Of Birth',
-                  icon: LucideIcons.calendar,
-                  trailing: true,
-                  onTap: () {
-                    // TODO: Open date picker
+                  controllerValue: form.dob,
+                  readOnly: true,
+                  trailingIcon: LucideIcons.calendar,
+                  onTap: () async {
+                    final now = DateTime.now();
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: now,
+                      firstDate: DateTime(now.year - 100, 1, 1),
+                      lastDate: DateTime(now.year, now.month, now.day),
+                      builder: (context, child) => Theme(
+                        data: ThemeData.dark().copyWith(
+                          colorScheme: ColorScheme.dark(
+                            primary: Color(0xFFF4B860),
+                            surface: Color(0xFF32373D),
+                          ),
+                        ),
+                        child: child!,
+                      ),
+                    );
+                    if (picked != null) {
+                      notifier.update(
+                        dob:
+                            "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}",
+                      );
+                    }
                   },
                 ),
                 SizedBox(height: 16.h),
+
                 _ProfileInputField(
                   hint: 'City',
-                  icon: Icons.location_on_outlined,
-                  trailing: true,
-                  onTap: () {
-                    // TODO: Open city picker (if needed)
-                  },
+                  controllerValue: form.city,
+                  onChanged: (val) => notifier.update(city: val),
                 ),
                 SizedBox(height: 16.h),
+
                 _ProfileInputField(
                   hint: 'Phone Number',
-                  icon: Icons.phone_android_rounded,
+                  controllerValue: form.phone,
+                  keyboardType: TextInputType.phone,
+                  onChanged: (val) => notifier.update(phone: val),
                 ),
                 SizedBox(height: 16.h),
+
                 _ProfileInputField(
                   hint: 'Gender',
-                  icon: Icons.keyboard_arrow_down_rounded,
-                  isDropdown: true,
-                  onTap: () {
-                    // TODO: Open gender select
+                  controllerValue: form.gender,
+                  readOnly: true,
+                  trailingIcon: Icons.keyboard_arrow_down_rounded,
+                  onTap: () async {
+                    final selected = await showModalBottomSheet<String>(
+                      context: context,
+                      backgroundColor: const Color(0xFF32373D),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(18),
+                        ),
+                      ),
+                      builder: (ctx) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              title: Text(
+                                'Male',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              onTap: () => Navigator.pop(ctx, 'Male'),
+                            ),
+                            ListTile(
+                              title: Text(
+                                'Female',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              onTap: () => Navigator.pop(ctx, 'Female'),
+                            ),
+                            ListTile(
+                              title: Text(
+                                'Other',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              onTap: () => Navigator.pop(ctx, 'Other'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    if (selected != null) notifier.update(gender: selected);
                   },
                 ),
                 SizedBox(height: 38.h),
@@ -135,7 +272,10 @@ class FillYourInfoScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(28),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      // TODO: Handle submit (e.g. validation, Firebase, etc)
+                      // Example: print(ref.read(profileFormProvider));
+                    },
                     child: Text(
                       "GET START",
                       style: TextStyle(
@@ -157,57 +297,106 @@ class FillYourInfoScreen extends ConsumerWidget {
 }
 
 // --- Profile Input Field Widget ---
-class _ProfileInputField extends StatelessWidget {
+// Fixed: Persistent controller for smooth typing.
+class _ProfileInputField extends StatefulWidget {
   final String hint;
-  final IconData icon;
-  final bool isDropdown;
-  final bool trailing;
+  final String controllerValue;
+  final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
+  final bool readOnly;
+  final IconData? trailingIcon;
+  final TextInputType? keyboardType;
 
   const _ProfileInputField({
     required this.hint,
-    required this.icon,
-    this.isDropdown = false,
-    this.trailing = false,
+    required this.controllerValue,
+    this.onChanged,
     this.onTap,
+    this.readOnly = false,
+    this.trailingIcon,
+    this.keyboardType,
   });
+
+  @override
+  State<_ProfileInputField> createState() => _ProfileInputFieldState();
+}
+
+class _ProfileInputFieldState extends State<_ProfileInputField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.controllerValue);
+  }
+
+  @override
+  void didUpdateWidget(covariant _ProfileInputField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controllerValue != _controller.text) {
+      // Only update if value changed (prevents cursor jump)
+      _controller.value = TextEditingValue(
+        text: widget.controllerValue,
+        selection: TextSelection.collapsed(
+          offset: widget.controllerValue.length,
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap, // For dropdown/date, open selector
-      child: Container(
-        width: double.infinity,
-        height: 50.h,
-        alignment: Alignment.centerLeft,
-        decoration: BoxDecoration(
-          color: const Color(0xFF4A5859),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 18.w),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.white70, size: 20.sp),
-            SizedBox(width: 15.w),
-            Expanded(
-              child: Text(
-                hint,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.93),
-                  fontWeight: FontWeight.w500,
-                  fontSize: 15.sp,
+      onTap: widget.readOnly && widget.onTap != null ? widget.onTap : null,
+      child: AbsorbPointer(
+        absorbing: widget.readOnly && widget.onTap != null,
+        child: Container(
+          width: double.infinity,
+          height: 50.h,
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: const Color(0xFF4A5859),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 18.w),
+          child: Row(
+            children: [
+              SizedBox(width: 15.w),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.93),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15.sp,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: widget.hint,
+                    hintStyle: TextStyle(
+                      color: Colors.white60,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 15.sp,
+                    ),
+                    isDense: true,
+                  ),
+                  readOnly: widget.readOnly,
+                  onChanged: widget.onChanged,
+                  keyboardType: widget.keyboardType,
+                  cursorColor: const Color(0xFFF4B860),
+                  onTap: widget.readOnly ? widget.onTap : null,
                 ),
               ),
-            ),
-            if (trailing || isDropdown)
-              Icon(
-                isDropdown
-                    ? Icons.keyboard_arrow_down_rounded
-                    : LucideIcons.calendar,
-                color: Colors.white70,
-                size: 21.sp,
-              ),
-          ],
+              if (widget.trailingIcon != null)
+                Icon(widget.trailingIcon, color: Colors.white70, size: 21.sp),
+            ],
+          ),
         ),
       ),
     );
