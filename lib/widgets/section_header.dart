@@ -1,31 +1,45 @@
 import 'package:flutter/material.dart';
-import '../consts.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 class SectionHeader extends StatelessWidget {
   final String title;
-  const SectionHeader({super.key, required this.title});
+  const SectionHeader({required this.title, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.headlineSmall,
+        SizedBox(
+          height: 36.h,
+          width: 152.w,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 24.sp,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ),
         TextButton(
           onPressed: () {},
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,
-            minimumSize:  Size(Responsive.screenWidth(context) * 0.1,
-              Responsive.screenHeight(context) * 0.04,),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           child: Text(
             "see all",
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
-                ),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.55),
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],

@@ -22,26 +22,14 @@ class SearchBar extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF4A5859),
           borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0x803F72AF),
-              blurRadius: 16,
-              spreadRadius: 1,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: TextField(
           style: Theme.of(context).textTheme.bodyMedium,
           decoration: InputDecoration(
             border: InputBorder.none,
-            icon: Icon(
-              Icons.search,
-              size: iconSize,
-              color: const Color(0xFF3F72AF),),
-            
+            icon: Icon(Icons.search, size: iconSize, color: Colors.white30),
           ),
         ),
       ),

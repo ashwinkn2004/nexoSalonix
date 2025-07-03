@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:salonix/screens/home_screen.dart';
 
 // 1. Riverpod form state
 final profileFormProvider =
@@ -275,6 +276,12 @@ class FillYourInfoScreen extends ConsumerWidget {
                     onPressed: () {
                       // TODO: Handle submit (e.g. validation, Firebase, etc)
                       // Example: print(ref.read(profileFormProvider));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(),
+                        ),
+                      );
                     },
                     child: Text(
                       "GET START",
