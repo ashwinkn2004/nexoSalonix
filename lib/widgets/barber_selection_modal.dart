@@ -21,197 +21,209 @@ class BarberSelectionModal extends ConsumerWidget {
     final barbers = _mockBarbers();
     final gold = const Color(0xFFF4B860);
 
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D313A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
-              ),
-              SizedBox(width: 12.w),
-              Text(
-                "select a barber",
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  color: gold,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-
-          // Barber List
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: barbers.length,
-            itemBuilder: (context, index) {
-              final barber = barbers[index];
-              final isSelected = selectedBarber?.name == barber.name;
-
-              return GestureDetector(
-                onTap: () =>
-                    ref.read(selectedBarberProvider.notifier).state = barber,
-                child: Container(
-                  margin: EdgeInsets.symmetric(vertical: 8.h),
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? gold.withOpacity(0.1)
-                        : Colors.transparent,
-                    border: Border.all(
-                      color: isSelected ? gold : Colors.white24,
-                      width: 1.5,
-                    ),
-                    borderRadius: BorderRadius.circular(12.r),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20.r),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        color: const Color(0xFF4A5859),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(Icons.arrow_back, color: gold, size: 24.sp),
                   ),
-                  child: Row(
-                    children: [
-                      // Image
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: isSelected ? gold : Colors.transparent,
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.r),
-                          child: Image.asset(
-                            barber.imageUrl,
-                            width: 60.w,
-                            height: 60.w,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
+                ),
+                Text(
+                  "select a barber",
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    color: gold,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
 
-                      // Barber info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+            // Barber List
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: barbers.length,
+              itemBuilder: (context, index) {
+                final barber = barbers[index];
+                final isSelected = selectedBarber?.name == barber.name;
+
+                return GestureDetector(
+                  onTap: () =>
+                      ref.read(selectedBarberProvider.notifier).state = barber,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(vertical: 8.h),
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF32373D),
+                      border: Border.all(
+                        color: isSelected ? gold : Colors.white,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Stack(
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              barber.name,
-                              style: TextStyle(
-                                color: isSelected ? gold : Colors.white,
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              "Starting From ₹${barber.startingPrice}",
-                              style: TextStyle(
-                                color: isSelected ? gold : Colors.white70,
-                                fontSize: 12.sp,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  color: isSelected ? gold : Colors.amber,
-                                  size: 14.sp,
+                            // Barber Image with border
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: isSelected ? gold : Colors.white,
+                                  width: 2,
                                 ),
-                                SizedBox(width: 4.w),
-                                Text(
-                                  "${barber.rating}  ${barber.reviews}+ Reviews",
-                                  style: TextStyle(
-                                    color: isSelected ? gold : Colors.white54,
-                                    fontSize: 12.sp,
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.r),
+                                child: Image.asset(
+                                  barber.imageUrl,
+                                  width: 60.w,
+                                  height: 60.w,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+
+                            // Barber Info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    barber.name,
+                                    style: TextStyle(
+                                      color: isSelected ? gold : Colors.white,
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  Text(
+                                    "Starting From ₹${barber.startingPrice}",
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? gold
+                                          : const Color(0xFFF0F0F0),
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2.h),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.star,
+                                        color:
+                                            isSelected ? gold : Colors.amber,
+                                        size: 10.sp,
+                                      ),
+                                      SizedBox(width: 4.w),
+                                      Text(
+                                        "${barber.rating}  ${barber.reviews}+ Reviews",
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? gold
+                                              : Colors.white54,
+                                          fontSize: 10.sp,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      ),
 
-                      // Favorite icon
-                      Icon(
-                        barber.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: isSelected ? gold : Colors.white54,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-          SizedBox(height: 20.h),
-
-          // Book Barber Button styled like Continue button
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: SizedBox(
-              width: 315.w,
-              height: 35.h,
-              child: ElevatedButton(
-                onPressed: selectedBarber == null
-                    ? null
-                    : () {
-                        Navigator.pop(context);
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) =>
-                              TimeSlotModal(barber: selectedBarber!),
-                        );
-                      },
-
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.resolveWith<Color>((
-                    states,
-                  ) {
-                    if (states.contains(MaterialState.disabled)) {
-                      return const Color(0xFFE6C87C);
-                    }
-                    return gold;
-                  }),
-                  shape: MaterialStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.r),
+                        // Favorite icon top-right
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Icon(
+                            barber.isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: isSelected ? gold : Colors.white,
+                            size: 20.sp,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  padding: MaterialStateProperty.all(EdgeInsets.zero),
-                  elevation: MaterialStateProperty.all(0),
-                ),
-                child: Text(
-                  "Book Barber",
-                  style: TextStyle(
-                    color: selectedBarber != null
-                        ? Colors.black
-                        : Colors.black54,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
+                );
+              },
+            ),
+            SizedBox(height: 20.h),
+
+            // Book Barber Button
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: SizedBox(
+                width: 315.w,
+                height: 35.h,
+                child: ElevatedButton(
+                  onPressed: selectedBarber == null
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) =>
+                                TimeSlotModal(barber: selectedBarber!),
+                          );
+                        },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                      (states) => states.contains(MaterialState.disabled)
+                          ? const Color(0xFFE6C87C)
+                          : gold,
+                    ),
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.r),
+                      ),
+                    ),
+                    elevation: MaterialStateProperty.all(0),
+                  ),
+                  child: Text(
+                    "book barber",
+                    style: TextStyle(
+                      color: selectedBarber != null
+                          ? Colors.white
+                          : Colors.white54,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 16.h),
-        ],
+            SizedBox(height: 16.h),
+          ],
+        ),
       ),
     );
   }
 
-  // Mock barber data
+  // Sample barber list
   List<BarberModel> _mockBarbers() {
     return [
       BarberModel(
@@ -228,7 +240,7 @@ class BarberSelectionModal extends ConsumerWidget {
         rating: 4.6,
         reviews: 3200,
         startingPrice: 180,
-        isFavorite: true,
+        isFavorite: false,
       ),
       BarberModel(
         name: "Emily James",

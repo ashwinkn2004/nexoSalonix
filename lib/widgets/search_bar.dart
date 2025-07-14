@@ -10,7 +10,7 @@ class SearchBar extends StatelessWidget {
 
     final horizontalPadding = screenWidth * 0.05;
     final verticalPadding = screenHeight * 0.019;
-    final iconSize = screenWidth * 0.07;
+    final iconSize = screenWidth * 0.06;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(

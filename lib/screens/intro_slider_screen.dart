@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -18,7 +19,7 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
   final List<String> _slideTexts = [
     'Find Barbers And \nSalons Easily in Your \nHands',
     'Book Your Favorite \nBarber And Salon \nQuickly',
-    'Come Be Handsome \nAnd Beautiful With Us \nRight Now!',
+    'Come Be Handsome \nAnd Beautiful With \nUs Right Now!',
   ];
 
   final List<String> _imagePaths = [
@@ -78,17 +79,16 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
             borderRadius: BorderRadius.circular(40),
           ),
           textStyle: Theme.of(context).textTheme.titleMedium!.copyWith(
-            fontSize: 13.sp,
-            fontWeight: FontWeight.bold,
-            // --- Black shadow for the button text ---
-            shadows: const [
-              Shadow(
-                color: Colors.black26,
-                blurRadius: 14,
-                offset: Offset(2, 8),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.bold,
+                shadows: const [
+                  Shadow(
+                    color: Colors.black26,
+                    blurRadius: 14,
+                    offset: Offset(2, 8),
+                  ),
+                ],
               ),
-            ],
-          ),
         ),
         child: Text(
           _currentPage == _slideTexts.length - 1 ? 'GET STARTED' : 'NEXT',
@@ -101,63 +101,82 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
   Widget build(BuildContext context) {
     final screenHeight = 1.sh;
     final screenWidth = 1.sw;
+    final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F7F7),
-      body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // 1. Top 65%: PageView with images
-            Align(
-              alignment: Alignment.topCenter,
-              child: SizedBox(
-                height: screenHeight * 0.65,
-                width: double.infinity,
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _slideTexts.length,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentPage = index;
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    return Image.asset(_imagePaths[index], fit: BoxFit.cover);
-                  },
-                ),
-              ),
-            ),
-            // 2. Gradient overlay: covers full height for seamless blend
-            Container(
+      backgroundColor: Colors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Top 65%: PageView with images
+          Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              height: screenHeight * 0.65,
               width: double.infinity,
-              height: screenHeight,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0x0032373D), // transparent at top
-                    Color(0xFF32373D), // solid at 65%
-                    Color(0xFF32373D), // solid at 100%
-                  ],
-                  stops: [0.0, 0.65, 1.0],
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: _slideTexts.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentPage = index;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  return Image.asset(_imagePaths[index], fit: BoxFit.cover);
+                },
+              ),
+            ),
+          ),
+
+          // 2. Gradient overlay
+          Container(
+            width: double.infinity,
+            height: screenHeight,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x0032373D),
+                  Color(0xFF32373D),
+                  Color(0xFF32373D),
+                ],
+                stops: [0.0, 0.65, 1.0],
+              ),
+            ),
+          ),
+
+          // 3. Blur the status bar area (outside SafeArea)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: statusBarHeight,
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                child: Container(
+                  color: Colors.transparent,
                 ),
               ),
             ),
-            // 3. Content on top (bottom-aligned column)
-            Align(
+          ),
+
+          // 4. SafeArea Content (no blur here)
+          SafeArea(
+            child: Align(
               alignment: Alignment.bottomCenter,
               child: Container(
                 width: double.infinity,
                 height: screenHeight * 0.4,
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.09),
+                padding:
+                    EdgeInsets.symmetric(horizontal: screenWidth * 0.09),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(height: screenHeight * 0.07),
-                    // Responsive Fitted text block with **white shadow**
                     SizedBox(
                       width: 337.w,
                       height: 144.h,
@@ -167,11 +186,12 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
                           _slideTexts[_currentPage],
                           textAlign: TextAlign.center,
                           maxLines: 3,
-                          style: Theme.of(context).textTheme.headlineSmall!
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall!
                               .copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFFF4B860),
-                                // --- White shadow for text ---
                                 shadows: const [
                                   Shadow(
                                     color: Colors.white24,
@@ -190,8 +210,8 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

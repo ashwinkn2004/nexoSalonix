@@ -11,8 +11,8 @@ class SectionHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SizedBox(
-          height: 36.h,
-          width: 152.w,
+          height: 40.h,
+          width: 160.w,
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
@@ -21,7 +21,7 @@ class SectionHeader extends StatelessWidget {
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
-                fontSize: 24.sp,
+                fontSize: 26.sp,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

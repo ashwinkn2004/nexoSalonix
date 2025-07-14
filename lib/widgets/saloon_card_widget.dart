@@ -25,7 +25,7 @@ class HorizontalCardList extends StatelessWidget {
             final salon = salons[index];
 
             return Padding(
-              padding: EdgeInsets.only(right: screenWidth * 0.05),
+              padding: EdgeInsets.only(right: screenWidth * 0.08),
               child: GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -44,9 +44,9 @@ class HorizontalCardList extends StatelessWidget {
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
-                              color: Colors.black38,
+                              color: Colors.black87.withOpacity(0.5),
                               offset: Offset(2, 4),
                               blurRadius: 18,
                             ),
