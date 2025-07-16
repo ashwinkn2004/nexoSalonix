@@ -52,7 +52,9 @@ class HomeScreen extends ConsumerWidget {
                 // Salon Sections
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.045),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.045,
+                    ),
                     child: salonsAsync.when(
                       data: (salons) => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,7 +76,9 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       error: (error, stack) => SizedBox(
                         height: screenHeight * 0.5,
-                        child: Center(child: Text('Error loading salons: $error')),
+                        child: Center(
+                          child: Text('Error loading salons: $error'),
+                        ),
                       ),
                     ),
                   ),
@@ -92,9 +96,7 @@ class HomeScreen extends ConsumerWidget {
             child: ClipRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                child: Container(
-                  color: Colors.black.withOpacity(0.05),
-                ),
+                child: Container(color: Colors.black.withOpacity(0.05)),
               ),
             ),
           ),

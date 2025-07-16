@@ -14,7 +14,9 @@ class DateSelectorModal extends ConsumerWidget {
     final selectedIndexNotifier = ref.read(selectedDateIndexProvider.notifier);
 
     return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)), // Rounded top corners
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(20.r),
+      ), // Rounded top corners
       child: Container(
         color: const Color(0xFF4A5859), // Background color
         child: SizedBox(
@@ -50,7 +52,15 @@ class DateSelectorModal extends ConsumerWidget {
                     itemCount: 7,
                     itemBuilder: (context, index) {
                       final date = DateTime.now().add(Duration(days: index));
-                      final dayAbbr = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'][date.weekday - 1];
+                      final dayAbbr = [
+                        'MON',
+                        'TUE',
+                        'WED',
+                        'THU',
+                        'FRI',
+                        'SAT',
+                        'SUN',
+                      ][date.weekday - 1];
                       final dayNum = date.day.toString().padLeft(2, '0');
                       final isTuesday = date.weekday == DateTime.tuesday;
                       final isSelected = selectedIndex == index;
@@ -133,14 +143,13 @@ class DateSelectorModal extends ConsumerWidget {
                             }
                           : null,
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                          (states) {
-                            if (states.contains(MaterialState.disabled)) {
-                              return const Color(0xFFE6C87C);
-                            }
-                            return const Color(0xFFF4B860);
-                          },
-                        ),
+                        backgroundColor:
+                            MaterialStateProperty.resolveWith<Color>((states) {
+                              if (states.contains(MaterialState.disabled)) {
+                                return const Color(0xFFE6C87C);
+                              }
+                              return const Color(0xFFF4B860);
+                            }),
                         shape: MaterialStateProperty.all(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.r),
@@ -152,7 +161,9 @@ class DateSelectorModal extends ConsumerWidget {
                       child: Text(
                         "Continue",
                         style: TextStyle(
-                          color: selectedIndex != null ? Colors.white : Colors.white54,
+                          color: selectedIndex != null
+                              ? Colors.white
+                              : Colors.white54,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w500,
                         ),

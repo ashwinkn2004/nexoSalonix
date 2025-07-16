@@ -115,54 +115,55 @@ class RegisterScreen extends ConsumerWidget {
                         SizedBox(height: screenHeight * 0.025),
 
                         StatefulBuilder(
-  builder: (context, setState) {
-    bool rememberMe = false;
+                          builder: (context, setState) {
+                            bool rememberMe = false;
 
-    return Center(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 20.w,
-            height: 20.w,
-            child: Checkbox(
-              value: rememberMe,
-              onChanged: (val) {
-                setState(() {
-                  rememberMe = val ?? false;
-                });
-              },
-              side: const BorderSide(color: Color(0xFF4A5859), width: 1.3),
-              activeColor: const Color(0xFFF4B860),
-              checkColor: const Color(0xFF4A5859),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-          ),
-          SizedBox(width: 10.w),
-          SizedBox(
-            width: 128.w,
-            height: 21.h,
-            child: Text(
-              'Remember me',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w600,
-                fontSize: 14.sp,
-                color: Color(0xFF4A5859),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  },
-),
+                            return Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 20.w,
+                                    height: 20.w,
+                                    child: Checkbox(
+                                      value: rememberMe,
+                                      onChanged: (val) {
+                                        setState(() {
+                                          rememberMe = val ?? false;
+                                        });
+                                      },
+                                      side: const BorderSide(
+                                        color: Color(0xFF4A5859),
+                                        width: 1.3,
+                                      ),
+                                      activeColor: const Color(0xFFF4B860),
+                                      checkColor: const Color(0xFF4A5859),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 10.w),
+                                  SizedBox(
+                                    width: 128.w,
+                                    height: 21.h,
+                                    child: Text(
+                                      'Remember me',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14.sp,
+                                        color: Color(0xFF4A5859),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
 
-SizedBox(height: screenHeight * 0.035),
-
-
+                        SizedBox(height: screenHeight * 0.035),
 
                         // Sign Up Button
                         SizedBox(
@@ -194,7 +195,9 @@ SizedBox(height: screenHeight * 0.035),
                             ),
                           ),
                         ),
-                        SizedBox(height: Responsive.screenHeight(context) * 0.1),
+                        SizedBox(
+                          height: Responsive.screenHeight(context) * 0.1,
+                        ),
 
                         // Divider with "or continue with"
                         Row(
@@ -230,9 +233,15 @@ SizedBox(height: screenHeight * 0.035),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SocialIcon(asset: "assets/facebook.png", onTap: () {}),
+                            SocialIcon(
+                              asset: "assets/facebook.png",
+                              onTap: () {},
+                            ),
                             SizedBox(width: 18.w),
-                            SocialIcon(asset: "assets/google.png", onTap: () {}),
+                            SocialIcon(
+                              asset: "assets/google.png",
+                              onTap: () {},
+                            ),
                             SizedBox(width: 18.w),
                             SocialIcon(asset: "assets/apple.png", onTap: () {}),
                           ],

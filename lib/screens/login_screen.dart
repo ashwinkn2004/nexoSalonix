@@ -12,7 +12,8 @@ class LoginScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final screenHeight = 1.sh;
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    final blurHeight = statusBarHeight + 20.h; // More than just status bar for visible blur
+    final blurHeight =
+        statusBarHeight + 20.h; // More than just status bar for visible blur
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F7F7),

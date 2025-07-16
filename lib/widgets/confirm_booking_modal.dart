@@ -22,7 +22,9 @@ class ConfirmBookingModal extends StatelessWidget {
     final bgColor = const Color(0xFF4A5859);
     final cardBg = const Color(0xFF32373D);
 
-    final formattedDate = DateFormat("EEEE dd MMM yyyy").format(date).toUpperCase();
+    final formattedDate = DateFormat(
+      "EEEE dd MMM yyyy",
+    ).format(date).toUpperCase();
     final formattedTime = time.format(context);
 
     return Container(

@@ -128,8 +128,7 @@ class BarberSelectionModal extends ConsumerWidget {
                                     children: [
                                       Icon(
                                         Icons.star,
-                                        color:
-                                            isSelected ? gold : Colors.amber,
+                                        color: isSelected ? gold : Colors.amber,
                                         size: 10.sp,
                                       ),
                                       SizedBox(width: 4.w),

@@ -7,8 +7,8 @@ import 'package:salonix/screens/home_screen.dart';
 
 final profileFormProvider =
     StateNotifierProvider<ProfileFormNotifier, ProfileFormState>((ref) {
-  return ProfileFormNotifier();
-});
+      return ProfileFormNotifier();
+    });
 
 class ProfileFormState {
   final String name;
@@ -34,15 +34,14 @@ class ProfileFormState {
     String? city,
     String? phone,
     String? gender,
-  }) =>
-      ProfileFormState(
-        name: name ?? this.name,
-        email: email ?? this.email,
-        dob: dob ?? this.dob,
-        city: city ?? this.city,
-        phone: phone ?? this.phone,
-        gender: gender ?? this.gender,
-      );
+  }) => ProfileFormState(
+    name: name ?? this.name,
+    email: email ?? this.email,
+    dob: dob ?? this.dob,
+    city: city ?? this.city,
+    phone: phone ?? this.phone,
+    gender: gender ?? this.gender,
+  );
 }
 
 class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
@@ -202,7 +201,8 @@ class FillYourInfoScreen extends ConsumerWidget {
                         );
                         if (picked != null) {
                           notifier.update(
-                            dob: "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}",
+                            dob:
+                                "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}",
                           );
                         }
                       },
@@ -210,11 +210,11 @@ class FillYourInfoScreen extends ConsumerWidget {
                     SizedBox(height: 16.h),
 
                     _ProfileInputField(
-  hint: 'City',
-  controllerValue: form.city,
-  onChanged: (val) => notifier.update(city: val),
-  trailingImage: 'assets/location.png',
-),
+                      hint: 'City',
+                      controllerValue: form.city,
+                      onChanged: (val) => notifier.update(city: val),
+                      trailingImage: 'assets/location.png',
+                    ),
 
                     SizedBox(height: 16.h),
 
@@ -236,22 +236,32 @@ class FillYourInfoScreen extends ConsumerWidget {
                           context: context,
                           backgroundColor: const Color(0xFF32373D),
                           shape: const RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.vertical(top: Radius.circular(18)),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(18),
+                            ),
                           ),
                           builder: (ctx) => Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               ListTile(
-                                title: const Text('Male', style: TextStyle(color: Colors.white)),
+                                title: const Text(
+                                  'Male',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                                 onTap: () => Navigator.pop(ctx, 'Male'),
                               ),
                               ListTile(
-                                title: const Text('Female', style: TextStyle(color: Colors.white)),
+                                title: const Text(
+                                  'Female',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                                 onTap: () => Navigator.pop(ctx, 'Female'),
                               ),
                               ListTile(
-                                title: const Text('Other', style: TextStyle(color: Colors.white)),
+                                title: const Text(
+                                  'Other',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                                 onTap: () => Navigator.pop(ctx, 'Other'),
                               ),
                             ],
@@ -275,7 +285,9 @@ class FillYourInfoScreen extends ConsumerWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const HomeScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreen(),
+                            ),
                           );
                         },
                         child: Text(
@@ -340,7 +352,9 @@ class _ProfileInputFieldState extends State<_ProfileInputField> {
     if (widget.controllerValue != _controller.text) {
       _controller.value = TextEditingValue(
         text: widget.controllerValue,
-        selection: TextSelection.collapsed(offset: widget.controllerValue.length),
+        selection: TextSelection.collapsed(
+          offset: widget.controllerValue.length,
+        ),
       );
     }
   }
@@ -403,7 +417,9 @@ class _ProfileInputFieldState extends State<_ProfileInputField> {
               else if (widget.trailingIcon != null)
                 Icon(
                   widget.trailingIcon,
-                  color: widget.hint == 'City' ? const Color(0xFFF0F0F0) : Colors.white70,
+                  color: widget.hint == 'City'
+                      ? const Color(0xFFF0F0F0)
+                      : Colors.white70,
                   size: 21.sp,
                 ),
             ],

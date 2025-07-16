@@ -19,11 +19,13 @@ class TimeSlotModal extends ConsumerWidget {
     final selectedIndex = ref.watch(timeSlotProvider);
     final timeSlots = getAvailableTimeSlots();
 
-    final selectedTime = (selectedIndex >= 0 && selectedIndex < timeSlots.length)
+    final selectedTime =
+        (selectedIndex >= 0 && selectedIndex < timeSlots.length)
         ? timeSlots[selectedIndex]
         : null;
 
-    final availability = (selectedIndex >= 0 && selectedIndex < timeSlots.length)
+    final availability =
+        (selectedIndex >= 0 && selectedIndex < timeSlots.length)
         ? isSlotAvailable(selectedIndex)
         : false;
 
@@ -102,10 +104,7 @@ class TimeSlotModal extends ConsumerWidget {
                             SizedBox(height: 2.h),
                             Text(
                               "Starting From ₹${barber.startingPrice}",
-                              style: TextStyle(
-                                color: gold,
-                                fontSize: 12.sp,
-                              ),
+                              style: TextStyle(color: gold, fontSize: 12.sp),
                             ),
                             Row(
                               children: [
@@ -152,7 +151,9 @@ class TimeSlotModal extends ConsumerWidget {
                 Column(
                   children: [
                     Text(
-                      selectedTime != null ? selectedTime.format(context) : "--:--",
+                      selectedTime != null
+                          ? selectedTime.format(context)
+                          : "--:--",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20.sp,
@@ -164,14 +165,14 @@ class TimeSlotModal extends ConsumerWidget {
                       selectedTime == null
                           ? "Please select a time"
                           : availability
-                              ? "Available"
-                              : "Not Available",
+                          ? "Available"
+                          : "Not Available",
                       style: TextStyle(
                         color: selectedTime == null
                             ? Colors.white38
                             : availability
-                                ? Colors.greenAccent
-                                : Colors.redAccent,
+                            ? Colors.greenAccent
+                            : Colors.redAccent,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -212,8 +213,8 @@ class TimeSlotModal extends ConsumerWidget {
                           color: isSelected
                               ? gold
                               : slotAvailable
-                                  ? Colors.white24
-                                  : Colors.redAccent.withOpacity(0.3),
+                              ? Colors.white24
+                              : Colors.redAccent.withOpacity(0.3),
                           width: 1.2,
                         ),
                       ),
@@ -224,8 +225,8 @@ class TimeSlotModal extends ConsumerWidget {
                             color: isSelected
                                 ? Colors.black
                                 : slotAvailable
-                                    ? Colors.white70
-                                    : Colors.redAccent,
+                                ? Colors.white70
+                                : Colors.redAccent,
                             fontSize: 13.sp,
                             fontWeight: isSelected
                                 ? FontWeight.bold
@@ -247,7 +248,8 @@ class TimeSlotModal extends ConsumerWidget {
                 width: double.infinity,
                 height: 40.h,
                 child: ElevatedButton(
-                  onPressed: (selectedIndex != null &&
+                  onPressed:
+                      (selectedIndex != null &&
                           selectedIndex >= 0 &&
                           availability)
                       ? () {
@@ -268,8 +270,9 @@ class TimeSlotModal extends ConsumerWidget {
                         }
                       : null,
                   style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.resolveWith<Color>((states) {
+                    backgroundColor: MaterialStateProperty.resolveWith<Color>((
+                      states,
+                    ) {
                       return (selectedIndex != null &&
                               selectedIndex >= 0 &&
                               availability)

@@ -79,16 +79,16 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
             borderRadius: BorderRadius.circular(40),
           ),
           textStyle: Theme.of(context).textTheme.titleMedium!.copyWith(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.bold,
-                shadows: const [
-                  Shadow(
-                    color: Colors.black26,
-                    blurRadius: 14,
-                    offset: Offset(2, 8),
-                  ),
-                ],
+            fontSize: 13.sp,
+            fontWeight: FontWeight.bold,
+            shadows: const [
+              Shadow(
+                color: Colors.black26,
+                blurRadius: 14,
+                offset: Offset(2, 8),
               ),
+            ],
+          ),
         ),
         child: Text(
           _currentPage == _slideTexts.length - 1 ? 'GET STARTED' : 'NEXT',
@@ -156,9 +156,7 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
             child: ClipRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                child: Container(
-                  color: Colors.transparent,
-                ),
+                child: Container(color: Colors.transparent),
               ),
             ),
           ),
@@ -170,8 +168,7 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
               child: Container(
                 width: double.infinity,
                 height: screenHeight * 0.4,
-                padding:
-                    EdgeInsets.symmetric(horizontal: screenWidth * 0.09),
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.09),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -186,9 +183,7 @@ class _IntroSliderScreenState extends ConsumerState<IntroSliderScreen> {
                           _slideTexts[_currentPage],
                           textAlign: TextAlign.center,
                           maxLines: 3,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall!
+                          style: Theme.of(context).textTheme.headlineSmall!
                               .copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFFF4B860),

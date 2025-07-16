@@ -71,9 +71,7 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
             child: ClipRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                child: Container(
-                  color: Colors.black.withOpacity(0.05),
-                ),
+                child: Container(color: Colors.black.withOpacity(0.05)),
               ),
             ),
           ),
@@ -91,9 +89,17 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
                     children: [
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: Icon(Icons.arrow_back, color: Colors.white, size: 28.sp),
+                        child: Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 28.sp,
+                        ),
                       ),
-                      Icon(LucideIcons.settings, color: Colors.white, size: 24.sp),
+                      Icon(
+                        LucideIcons.settings,
+                        color: Colors.white,
+                        size: 24.sp,
+                      ),
                     ],
                   ),
                   SizedBox(height: 30.h),
@@ -117,9 +123,11 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
                           borderRadius: BorderRadius.circular(16.r),
                           child: PageView.builder(
                             controller: _pageController,
-                            onPageChanged: (index) => setState(() => _currentPage = index),
+                            onPageChanged: (index) =>
+                                setState(() => _currentPage = index),
                             itemCount: 3,
-                            itemBuilder: (_, index) => Image.asset(salon.image, fit: BoxFit.cover),
+                            itemBuilder: (_, index) =>
+                                Image.asset(salon.image, fit: BoxFit.cover),
                           ),
                         ),
                       ),
@@ -131,7 +139,10 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
                           child: Container(
                             height: 25.h,
                             width: 65.w,
-                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.w,
+                              vertical: 4.h,
+                            ),
                             decoration: BoxDecoration(
                               color: Color(0xFF4A5859),
                               borderRadius: BorderRadius.circular(20.r),
@@ -182,7 +193,10 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
                           ),
                           Text(
                             salon.address,
-                            style: TextStyle(fontSize: 13.sp, color: Colors.white),
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -192,7 +206,10 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
                           SizedBox(width: 4.w),
                           Text(
                             salon.rating.toString(),
-                            style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.sp,
+                            ),
                           ),
                         ],
                       ),
@@ -214,7 +231,11 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 10.w),
                     child: Text(
                       "Lorem ipsum dolor sit amet consectetur. Nisi odio ut tortor maecenas integer et odio...",
-                      style: TextStyle(color: Colors.white, fontSize: 13.sp, height: 1.5),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        height: 1.5,
+                      ),
                     ),
                   ),
 
@@ -232,7 +253,6 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
                   SizedBox(height: 12.h),
 
                   // ✅ Removed selected date display here
-
                   SizedBox(
                     height: 100.h,
                     child: SingleChildScrollView(
@@ -240,10 +260,30 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
                       child: Row(
                         children: [
                           SizedBox(width: 12.w),
-                          _buildServiceChip("Hair", imageAsset: 'assets/hair.png', onTap: () => _showDateSelectionModal(context, "Hair")),
-                          _buildServiceChip("Spa", imageAsset: 'assets/spa.png', onTap: () => _showDateSelectionModal(context, "Spa")),
-                          _buildServiceChip("Nails", imageAsset: 'assets/nails.png', onTap: () => _showDateSelectionModal(context, "Nails")),
-                          _buildServiceChip("Skincare", imageAsset: 'assets/hair.png', onTap: () => _showDateSelectionModal(context, "Skincare")),
+                          _buildServiceChip(
+                            "Hair",
+                            imageAsset: 'assets/hair.png',
+                            onTap: () =>
+                                _showDateSelectionModal(context, "Hair"),
+                          ),
+                          _buildServiceChip(
+                            "Spa",
+                            imageAsset: 'assets/spa.png',
+                            onTap: () =>
+                                _showDateSelectionModal(context, "Spa"),
+                          ),
+                          _buildServiceChip(
+                            "Nails",
+                            imageAsset: 'assets/nails.png',
+                            onTap: () =>
+                                _showDateSelectionModal(context, "Nails"),
+                          ),
+                          _buildServiceChip(
+                            "Skincare",
+                            imageAsset: 'assets/hair.png',
+                            onTap: () =>
+                                _showDateSelectionModal(context, "Skincare"),
+                          ),
                           SizedBox(width: 12.w),
                         ],
                       ),
@@ -259,22 +299,33 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
                       width: double.infinity,
                       child: FlutterMap(
                         options: MapOptions(
-                          center: LatLng(widget.salon.latitude, widget.salon.longitude),
+                          center: LatLng(
+                            widget.salon.latitude,
+                            widget.salon.longitude,
+                          ),
                           zoom: 16.0,
                         ),
                         children: [
                           TileLayer(
-                            urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                            urlTemplate:
+                                'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                             subdomains: ['a', 'b', 'c', 'd'],
                             userAgentPackageName: 'com.example.salonix',
                           ),
                           MarkerLayer(
                             markers: [
                               Marker(
-                                point: LatLng(widget.salon.latitude, widget.salon.longitude),
+                                point: LatLng(
+                                  widget.salon.latitude,
+                                  widget.salon.longitude,
+                                ),
                                 width: 40,
                                 height: 40,
-                                child: Icon(Icons.location_on, color: Colors.redAccent, size: 36.sp),
+                                child: Icon(
+                                  Icons.location_on,
+                                  color: Colors.redAccent,
+                                  size: 36.sp,
+                                ),
                               ),
                             ],
                           ),
@@ -299,8 +350,12 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
     );
   }
 
-  Widget _buildServiceChip(String label,
-      {IconData? icon, String? imageAsset, VoidCallback? onTap}) {
+  Widget _buildServiceChip(
+    String label, {
+    IconData? icon,
+    String? imageAsset,
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
@@ -312,7 +367,12 @@ class _SalonDetailsScreenState extends ConsumerState<SalonDetailsScreen> {
               backgroundColor: const Color(0xFFD9D9D9),
               radius: 28.r,
               child: imageAsset != null
-                  ? Image.asset(imageAsset, width: 28.w, height: 28.h, fit: BoxFit.contain)
+                  ? Image.asset(
+                      imageAsset,
+                      width: 28.w,
+                      height: 28.h,
+                      fit: BoxFit.contain,
+                    )
                   : Icon(icon, color: Colors.white, size: 22.sp),
             ),
             SizedBox(height: 8.h),
