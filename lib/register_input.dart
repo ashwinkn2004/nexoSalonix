@@ -6,6 +6,7 @@ class RegisterInput extends StatelessWidget {
   final String hint;
   final bool obscureText;
   final Widget? suffixIcon;
+  final TextEditingController editingController;
 
   const RegisterInput({
     super.key,
@@ -13,11 +14,13 @@ class RegisterInput extends StatelessWidget {
     required this.hint,
     required this.obscureText,
     this.suffixIcon,
+    required this.editingController,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: editingController,
       obscureText: obscureText,
       style: TextStyle(
         color: Colors.white,

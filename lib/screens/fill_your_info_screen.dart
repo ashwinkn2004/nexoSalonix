@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:salonix/screens/home_screen.dart';
+import 'package:salonix/services/Authentication/auth_service.dart';
 
 final profileFormProvider =
     StateNotifierProvider<ProfileFormNotifier, ProfileFormState>((ref) {
@@ -67,7 +67,35 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
 }
 
 class FillYourInfoScreen extends ConsumerWidget {
-  const FillYourInfoScreen({super.key});
+  final String email;
+  const FillYourInfoScreen({super.key, required this.email});
+
+  Future<void> _submitProfile(
+    BuildContext context,
+    ProfileFormState form,
+  ) async {
+    final data = {
+      'name': form.name.trim(),
+      'email': form.email.trim(),
+      'dob': form.dob.trim(),
+      'city': form.city.trim(),
+      'phone': form.phone.trim(),
+      'gender': form.gender.trim(),
+    };
+
+    try {
+      await AuthService().updateUserProfile(data);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } catch (e) {
+      print("Failed to update profile: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to update profile.")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -76,6 +104,13 @@ class FillYourInfoScreen extends ConsumerWidget {
     final avatarSize = 100.w;
     final form = ref.watch(profileFormProvider);
     final notifier = ref.read(profileFormProvider.notifier);
+
+    // Initialize email from constructor parameter
+    if (form.email.isEmpty && email.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifier.update(email: email);
+      });
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF32373D),
@@ -161,22 +196,20 @@ class FillYourInfoScreen extends ConsumerWidget {
                       ],
                     ),
                     SizedBox(height: screenHeight * 0.038),
-
                     _ProfileInputField(
                       hint: 'Name',
                       controllerValue: form.name,
                       onChanged: (val) => notifier.update(name: val),
                     ),
                     SizedBox(height: 16.h),
-
                     _ProfileInputField(
                       hint: 'Email',
                       controllerValue: form.email,
                       onChanged: (val) => notifier.update(email: val),
                       keyboardType: TextInputType.emailAddress,
+                      readOnly: true,
                     ),
                     SizedBox(height: 16.h),
-
                     _ProfileInputField(
                       hint: 'Date Of Birth',
                       controllerValue: form.dob,
@@ -208,16 +241,13 @@ class FillYourInfoScreen extends ConsumerWidget {
                       },
                     ),
                     SizedBox(height: 16.h),
-
                     _ProfileInputField(
                       hint: 'City',
                       controllerValue: form.city,
                       onChanged: (val) => notifier.update(city: val),
                       trailingImage: 'assets/location.png',
                     ),
-
                     SizedBox(height: 16.h),
-
                     _ProfileInputField(
                       hint: 'Phone Number',
                       controllerValue: form.phone,
@@ -225,7 +255,6 @@ class FillYourInfoScreen extends ConsumerWidget {
                       onChanged: (val) => notifier.update(phone: val),
                     ),
                     SizedBox(height: 16.h),
-
                     _ProfileInputField(
                       hint: 'Gender',
                       controllerValue: form.gender,
@@ -271,7 +300,6 @@ class FillYourInfoScreen extends ConsumerWidget {
                       },
                     ),
                     SizedBox(height: 38.h),
-
                     SizedBox(
                       width: double.infinity,
                       height: 50.h,
@@ -282,14 +310,7 @@ class FillYourInfoScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(28),
                           ),
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const HomeScreen(),
-                            ),
-                          );
-                        },
+                        onPressed: () => _submitProfile(context, form),
                         child: Text(
                           "GET START",
                           style: TextStyle(

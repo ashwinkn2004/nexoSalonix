@@ -1,9 +1,15 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:salonix/firebase_options.dart';
 import 'package:salonix/screens/splash_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // 🔹 Required before Firebase init
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -13,11 +19,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(390, 844), // Set to your design's reference size
+      designSize: const Size(390, 844), // Your reference design size
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        // Use .sp, .w, .h INSIDE the builder so ScreenUtil is initialized
         final theme = ThemeData(
           fontFamily: 'Poppins',
           scaffoldBackgroundColor: const Color(0xFFF9F7F7),
@@ -28,7 +33,7 @@ class MyApp extends StatelessWidget {
           ),
           textTheme: TextTheme(
             headlineSmall: TextStyle(
-              fontSize: 32.sp, // Use .sp, .w, .h here
+              fontSize: 32.sp,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF32373D),
             ),
@@ -44,6 +49,7 @@ class MyApp extends StatelessWidget {
             labelSmall: TextStyle(fontSize: 12.sp),
           ),
         );
+
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: theme,

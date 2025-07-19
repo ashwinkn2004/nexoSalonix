@@ -7,13 +7,36 @@ import 'package:salonix/consts.dart';
 import 'package:salonix/provider/register_form_provider.dart';
 import 'package:salonix/register_input.dart';
 import 'package:salonix/screens/fill_your_info_screen.dart';
+import 'package:salonix/services/Authentication/auth_service.dart';
 import 'package:salonix/social_icon.dart';
 
-class RegisterScreen extends ConsumerWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  late TextEditingController emailController;
+  late TextEditingController passwordController;
+
+  @override
+  void initState() {
+    super.initState();
+    emailController = TextEditingController();
+    passwordController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final screenHeight = 1.sh;
     final state = ref.watch(registerFormProvider);
     final notifier = ref.read(registerFormProvider.notifier);
@@ -24,7 +47,6 @@ class RegisterScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFF32373D),
       body: Stack(
         children: [
-          // 1. Blur area above SafeArea (status bar)
           Positioned(
             top: 0,
             left: 0,
@@ -33,32 +55,25 @@ class RegisterScreen extends ConsumerWidget {
             child: ClipRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                child: Container(
-                  color: Colors.black.withOpacity(0.05), // subtle tint
-                ),
+                child: Container(color: Colors.black.withOpacity(0.05)),
               ),
             ),
           ),
-
-          // 2. SafeArea content
           SafeArea(
             child: Stack(
               children: [
-                // Back arrow
                 Positioned(
                   top: 16.h,
                   left: 16.w,
                   child: IconButton(
                     icon: Icon(
                       Icons.arrow_back_rounded,
-                      color: Color(0xFF4A5859),
+                      color: const Color(0xFF4A5859),
                       size: 40.sp,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-
-                // Main content scroll
                 SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 38.w),
@@ -88,19 +103,21 @@ class RegisterScreen extends ConsumerWidget {
                         ),
                         SizedBox(height: screenHeight * 0.07),
 
-                        // Email
+                        // Email input
                         RegisterInput(
                           icon: Icons.email_outlined,
                           hint: 'Email',
                           obscureText: false,
+                          editingController: emailController,
                         ),
                         SizedBox(height: screenHeight * 0.015),
 
-                        // Password
+                        // Password input
                         RegisterInput(
                           icon: Icons.lock_outline_rounded,
                           hint: 'Password',
                           obscureText: !state.showPassword1,
+                          editingController: passwordController,
                           suffixIcon: IconButton(
                             icon: Icon(
                               state.showPassword1
@@ -117,7 +134,6 @@ class RegisterScreen extends ConsumerWidget {
                         StatefulBuilder(
                           builder: (context, setState) {
                             bool rememberMe = false;
-
                             return Center(
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -165,7 +181,6 @@ class RegisterScreen extends ConsumerWidget {
 
                         SizedBox(height: screenHeight * 0.035),
 
-                        // Sign Up Button
                         SizedBox(
                           width: 315.w,
                           height: 45.h,
@@ -176,14 +191,43 @@ class RegisterScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(28),
                               ),
                             ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const FillYourInfoScreen(),
-                                ),
-                              );
+                            onPressed: () async {
+                              final email = emailController.text.trim();
+                              final password = passwordController.text.trim();
+
+                              if (email.isEmpty || password.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Please enter both email and password.",
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              try {
+                                final user = await AuthService()
+                                    .registerWithEmail(email, password);
+                                if (user != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => FillYourInfoScreen(
+                                        email: user.email!,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "Signup failed: ${e.toString()}",
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                             child: Text(
                               "SIGN UP",
@@ -229,7 +273,6 @@ class RegisterScreen extends ConsumerWidget {
                         ),
                         SizedBox(height: 35.h),
 
-                        // Social Icons
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -248,7 +291,6 @@ class RegisterScreen extends ConsumerWidget {
                         ),
                         SizedBox(height: 36.h),
 
-                        // Bottom text
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
