@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "825794088538-f5jo732a56a58lb8gt3fe58ubejij3o2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.salonix.customer",
+            "certificate_hash": "b6b9becb63d2edd95f90199e765d06785b406057"
+          }
+        },
+        {
           "client_id": "825794088538-ehcalpclqvh7bmfakloq15o2fjmb91nn.apps.googleusercontent.com",
           "client_type": 3
         }

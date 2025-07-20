@@ -1,4 +1,5 @@
-package com.example.salonix
+package com.salonix.customer
+
 
 import io.flutter.embedding.android.FlutterActivity
 

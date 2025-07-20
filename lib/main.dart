@@ -6,12 +6,14 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:salonix/firebase_options.dart';
 import 'package:salonix/screens/splash_screen.dart';
 import 'package:salonix/utils/hive_utils.dart';
+// Import your home screen
+import 'package:salonix/screens/home_screen.dart'; // Add this import
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await HiveUtils.init(); // Initialize Hive
+  await HiveUtils.init();
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -57,6 +59,18 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: theme,
           home: const SplashScreen(),
+          // Add route handling
+          routes: {
+            '/home': (context) =>
+                const HomeScreen(), // Make sure HomeScreen is imported
+          },
+          // Optional: Add onGenerateRoute for more complex routing
+          onGenerateRoute: (settings) {
+            // Handle unknown routes or parameterized routes here
+            return MaterialPageRoute(
+              builder: (context) => const SplashScreen(), // Default fallback
+            );
+          },
         );
       },
     );

@@ -129,13 +129,24 @@ class AuthService {
   /// Facebook Sign-In
   Future<Map<String, dynamic>?> signInWithFacebook() async {
     try {
-      final LoginResult loginResult = await FacebookAuth.instance.login();
-      if (loginResult.status != LoginStatus.success) return null;
+      // Trigger the login flow
+      final LoginResult loginResult = await FacebookAuth.instance.login(
+        permissions: ['email', 'public_profile'],
+      );
 
-      final credential = FacebookAuthProvider.credential(
+      if (loginResult.status != LoginStatus.success) {
+        throw FirebaseAuthException(
+          code: 'ERROR_ABORTED_BY_USER',
+          message: 'Login aborted by user',
+        );
+      }
+
+      // Create a credential from the access token
+      final OAuthCredential credential = FacebookAuthProvider.credential(
         loginResult.accessToken!.tokenString,
       );
 
+      // Once signed in, return the UserCredential
       final userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user;
 
@@ -159,9 +170,15 @@ class AuthService {
         };
       }
       return null;
+    } on PlatformException catch (e) {
+      throw FirebaseAuthException(code: e.code, message: e.message);
+    } on FirebaseAuthException catch (e) {
+      throw e;
     } catch (e) {
-      print('Facebook sign in error: $e');
-      rethrow;
+      throw FirebaseAuthException(
+        code: 'ERROR_UNKNOWN',
+        message: 'Unknown error occurred',
+      );
     }
   }
 

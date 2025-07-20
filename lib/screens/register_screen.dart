@@ -71,8 +71,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _handleSocialLogin(String provider) async {
+    setState(() => isLoading = true);
     try {
       Map<String, dynamic>? result;
+
       if (provider == 'google') {
         result = await AuthService().signInWithGoogle();
       } else if (provider == 'facebook') {
@@ -80,6 +82,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
 
       if (result != null && mounted) {
+        // Check if it's a new user (optional)
+        final isNewUser = result['isNewUser'] ?? false;
+
+        // Navigate to HomeScreen after successful login
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -87,9 +93,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$provider login failed: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Facebook login failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
       }
     }
   }

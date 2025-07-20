@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:salonix/screens/fill_your_info_screen.dart';
+import 'package:salonix/screens/home_screen.dart';
 import 'package:salonix/screens/register_screen.dart';
 import 'package:salonix/services/Authentication/auth_service.dart';
 import 'package:salonix/social_buttons.dart';
@@ -179,18 +180,16 @@ class LoginScreen extends ConsumerWidget {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => FillYourInfoScreen(
-                                      email: email,
-                                      // You can pass the name if you want to pre-fill it
-                                      // name: name,
-                                    ),
+                                    builder: (context) => HomeScreen(),
                                   ),
                                 );
                               } else {
                                 // Navigate to home screen for existing users
-                                Navigator.pushReplacementNamed(
+                                Navigator.push(
                                   context,
-                                  '/home',
+                                  MaterialPageRoute(
+                                    builder: (context) => HomeScreen(),
+                                  ),
                                 );
                               }
                             } on PlatformException catch (e) {
