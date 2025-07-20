@@ -171,14 +171,19 @@ class LoginScreen extends ConsumerWidget {
 
                               final user = result['user'] as User;
                               final isNewUser = result['isNewUser'] as bool;
+                              final email = result['email'] as String? ?? '';
+                              final name = result['name'] as String? ?? '';
 
                               if (isNewUser) {
-                                // Navigate to RegisterScreen for new users
-                                Navigator.push(
+                                // Navigate to FillYourInfoScreen for new users
+                                Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        FillYourInfoScreen(email: ""),
+                                    builder: (context) => FillYourInfoScreen(
+                                      email: email,
+                                      // You can pass the name if you want to pre-fill it
+                                      // name: name,
+                                    ),
                                   ),
                                 );
                               } else {
@@ -193,11 +198,7 @@ class LoginScreen extends ConsumerWidget {
                               switch (e.code) {
                                 case 'sign_in_failed':
                                   errorMessage =
-                                      'Google Sign-In failed. Check your configuration or try again. Details: ${e.details ?? "No additional details"}';
-                                  break;
-                                case 'api_exception':
-                                  errorMessage =
-                                      'Google API error (Code ${e.code}). Check OAuth credentials or SHA keys. Details: ${e.details ?? "No additional details"}';
+                                      'Google Sign-In failed. Please try again.';
                                   break;
                                 case 'network_error':
                                   errorMessage =
@@ -205,25 +206,21 @@ class LoginScreen extends ConsumerWidget {
                                   break;
                                 default:
                                   errorMessage =
-                                      'Google Sign-In failed: ${e.message ?? "Unknown error"}. Details: ${e.details ?? "No details"}';
+                                      'Google Sign-In failed: ${e.message ?? "Unknown error"}';
                               }
-                              print(
-                                'Google Sign-In error: ${e.code} - ${e.message} - ${e.details}',
-                              );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(errorMessage),
                                   backgroundColor: Colors.red,
-                                  duration: const Duration(seconds: 5),
                                 ),
                               );
                             } catch (e) {
-                              print('Unexpected Google Sign-In error: $e');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Unexpected error: $e'),
+                                  content: Text(
+                                    'An error occurred during Google Sign-In',
+                                  ),
                                   backgroundColor: Colors.red,
-                                  duration: const Duration(seconds: 5),
                                 ),
                               );
                             }

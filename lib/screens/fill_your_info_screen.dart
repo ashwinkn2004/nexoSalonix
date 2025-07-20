@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salonix/screens/home_screen.dart';
+import 'package:salonix/screens/register_screen.dart';
 import 'package:salonix/services/Authentication/auth_service.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -188,7 +189,7 @@ class FillYourInfoScreen extends ConsumerWidget {
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            MaterialPageRoute(builder: (_) => const RegisterScreen()),
           );
         }
       }

@@ -21,6 +21,8 @@ class RegisterScreen extends ConsumerStatefulWidget {
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   late TextEditingController emailController;
   late TextEditingController passwordController;
+  bool rememberMe = false;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -34,6 +36,62 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSignIn() async {
+    setState(() => isLoading = true);
+    try {
+      final email = emailController.text.trim();
+      final password = passwordController.text.trim();
+
+      if (email.isEmpty || password.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+        return;
+      }
+
+      final result = await AuthService().handleSignIn(email, password);
+
+      if (result['success'] == true && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['error'] ?? 'Login failed')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleSocialLogin(String provider) async {
+    try {
+      Map<String, dynamic>? result;
+      if (provider == 'google') {
+        result = await AuthService().signInWithGoogle();
+      } else if (provider == 'facebook') {
+        result = await AuthService().signInWithFacebook();
+      }
+
+      if (result != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$provider login failed: $e')));
+      }
+    }
   }
 
   @override
@@ -132,52 +190,47 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                         SizedBox(height: screenHeight * 0.025),
 
-                        StatefulBuilder(
-                          builder: (context, setState) {
-                            bool rememberMe = false;
-                            return Center(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    width: 20.w,
-                                    height: 20.w,
-                                    child: Checkbox(
-                                      value: rememberMe,
-                                      onChanged: (val) {
-                                        setState(() {
-                                          rememberMe = val ?? false;
-                                        });
-                                      },
-                                      side: const BorderSide(
-                                        color: Color(0xFF4A5859),
-                                        width: 1.3,
-                                      ),
-                                      activeColor: const Color(0xFFF4B860),
-                                      checkColor: const Color(0xFF4A5859),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ),
+                        Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 20.w,
+                                height: 20.w,
+                                child: Checkbox(
+                                  value: rememberMe,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      rememberMe = val ?? false;
+                                    });
+                                  },
+                                  side: const BorderSide(
+                                    color: Color(0xFF4A5859),
+                                    width: 1.3,
                                   ),
-                                  SizedBox(width: 10.w),
-                                  SizedBox(
-                                    width: 128.w,
-                                    height: 21.h,
-                                    child: Text(
-                                      'Remember me',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14.sp,
-                                        color: Color(0xFF4A5859),
-                                      ),
-                                    ),
+                                  activeColor: const Color(0xFFF4B860),
+                                  checkColor: const Color(0xFF4A5859),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
-                                ],
+                                ),
                               ),
-                            );
-                          },
+                              SizedBox(width: 10.w),
+                              SizedBox(
+                                width: 128.w,
+                                height: 21.h,
+                                child: Text(
+                                  'Remember me',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14.sp,
+                                    color: const Color(0xFF4A5859),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
 
                         SizedBox(height: screenHeight * 0.035),
@@ -192,35 +245,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 borderRadius: BorderRadius.circular(28),
                               ),
                             ),
-                            onPressed: () async {
-                              final email = emailController.text.trim();
-                              final password = passwordController.text.trim();
-
-                              // Call the service method
-                              final result = await AuthService().handleSignIn(
-                                email,
-                                password,
-                              );
-
-                              if (result['success']) {
-                                // Navigate to HomeScreen on success
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        HomeScreen(), // Replace with your actual HomeScreen
-                                  ),
-                                );
-                              } else {
-                                // Show error message
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(result['error']),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
-                            },
+                            onPressed: isLoading ? null : _handleSignIn,
                             child: Text(
                               "SIGN IN",
                               style: TextStyle(
@@ -231,9 +256,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          height: Responsive.screenHeight(context) * 0.1,
-                        ),
+                        SizedBox(height: screenHeight * 0.1),
 
                         // Divider with "or continue with"
                         Row(
@@ -270,15 +293,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           children: [
                             SocialIcon(
                               asset: "assets/facebook.png",
-                              onTap: () {},
+                              onTap: () => _handleSocialLogin('facebook'),
                             ),
                             SizedBox(width: 18.w),
                             SocialIcon(
                               asset: "assets/google.png",
-                              onTap: () {},
+                              onTap: () => _handleSocialLogin('google'),
                             ),
                             SizedBox(width: 18.w),
-                            SocialIcon(asset: "assets/apple.png", onTap: () {}),
+                            SocialIcon(
+                              asset: "assets/apple.png",
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Apple login coming soon'),
+                                  ),
+                                );
+                              },
+                            ),
                           ],
                         ),
                         SizedBox(height: 36.h),

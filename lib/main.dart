@@ -2,13 +2,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:salonix/firebase_options.dart';
 import 'package:salonix/screens/splash_screen.dart';
+import 'package:salonix/utils/hive_utils.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // 🔹 Required before Firebase init
+  WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await HiveUtils.init(); // Initialize Hive
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -19,7 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(390, 844), // Your reference design size
+      designSize: const Size(390, 844),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
