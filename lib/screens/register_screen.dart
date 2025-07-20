@@ -7,6 +7,7 @@ import 'package:salonix/consts.dart';
 import 'package:salonix/provider/register_form_provider.dart';
 import 'package:salonix/register_input.dart';
 import 'package:salonix/screens/fill_your_info_screen.dart';
+import 'package:salonix/screens/home_screen.dart';
 import 'package:salonix/services/Authentication/auth_service.dart';
 import 'package:salonix/social_icon.dart';
 
@@ -88,7 +89,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Create Your\nAccount',
+                              'Login \nto Salonix',
                               textAlign: TextAlign.left,
                               style: TextStyle(
                                 color: const Color(0xFFF4B860),
@@ -195,42 +196,33 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               final email = emailController.text.trim();
                               final password = passwordController.text.trim();
 
-                              if (email.isEmpty || password.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Please enter both email and password.",
-                                    ),
+                              // Call the service method
+                              final result = await AuthService().handleSignIn(
+                                email,
+                                password,
+                              );
+
+                              if (result['success']) {
+                                // Navigate to HomeScreen on success
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        HomeScreen(), // Replace with your actual HomeScreen
                                   ),
                                 );
-                                return;
-                              }
-
-                              try {
-                                final user = await AuthService()
-                                    .registerWithEmail(email, password);
-                                if (user != null) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => FillYourInfoScreen(
-                                        email: user.email!,
-                                      ),
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
+                              } else {
+                                // Show error message
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(
-                                      "Signup failed: ${e.toString()}",
-                                    ),
+                                    content: Text(result['error']),
+                                    backgroundColor: Colors.red,
                                   ),
                                 );
                               }
                             },
                             child: Text(
-                              "SIGN UP",
+                              "SIGN IN",
                               style: TextStyle(
                                 color: const Color(0xFF4A5859),
                                 fontWeight: FontWeight.w600,
@@ -295,7 +287,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Already Have An Account? ",
+                              "Don't Have An Account? ",
                               style: TextStyle(
                                 color: const Color(0xFFF4B860),
                                 fontSize: 14.sp,
@@ -304,10 +296,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const FillYourInfoScreen(email: ""),
+                                  ),
+                                );
                               },
                               child: Text(
-                                "Signin",
+                                "Signup",
                                 style: TextStyle(
                                   color: const Color(0xFFF4B860),
                                   fontSize: 14.sp,

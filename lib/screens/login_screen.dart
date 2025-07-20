@@ -1,9 +1,16 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:salonix/screens/fill_your_info_screen.dart';
 import 'package:salonix/screens/register_screen.dart';
+import 'package:salonix/services/Authentication/auth_service.dart';
 import 'package:salonix/social_buttons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
+
+// Riverpod provider for AuthService
+final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -12,15 +19,14 @@ class LoginScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final screenHeight = 1.sh;
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    final blurHeight =
-        statusBarHeight + 20.h; // More than just status bar for visible blur
+    final blurHeight = statusBarHeight + 20.h;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F7F7),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // 1. Background image
+          // Background image
           Align(
             alignment: Alignment.topCenter,
             child: SizedBox(
@@ -30,7 +36,7 @@ class LoginScreen extends ConsumerWidget {
             ),
           ),
 
-          // 2. Gradient overlay
+          // Gradient overlay
           Container(
             width: double.infinity,
             height: screenHeight,
@@ -48,7 +54,7 @@ class LoginScreen extends ConsumerWidget {
             ),
           ),
 
-          // 3. BLUR the top part before SafeArea
+          // Blur the top part
           Positioned(
             top: 0,
             left: 0,
@@ -57,18 +63,15 @@ class LoginScreen extends ConsumerWidget {
             child: ClipRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                child: Container(
-                  color: Colors.black.withOpacity(0.05), // Optional dark tint
-                ),
+                child: Container(color: Colors.black.withOpacity(0.05)),
               ),
             ),
           ),
 
-          // 4. SAFEAREA starts here
+          // Main content
           SafeArea(
             child: Stack(
               children: [
-                // Main content at 36% from top
                 Positioned(
                   top: screenHeight * 0.35,
                   left: 0,
@@ -90,13 +93,141 @@ class LoginScreen extends ConsumerWidget {
                         SocialButton(
                           asset: "assets/facebook.png",
                           text: "Continue With Facebook",
-                          onTap: () {},
+                          onTap: () async {
+                            try {
+                              final authService = ref.read(authServiceProvider);
+                              final result = await authService
+                                  .signInWithFacebook();
+                              if (result == null) return; // User cancelled
+
+                              final user = result['user'] as User;
+                              final isNewUser = result['isNewUser'] as bool;
+
+                              if (isNewUser) {
+                                // Navigate to RegisterScreen for new users
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FillYourInfoScreen(
+                                      email: user.email ?? '',
+                                      //name: user.displayName ?? '',
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                // Navigate to home screen for existing users
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/home',
+                                );
+                              }
+                            } on PlatformException catch (e) {
+                              String errorMessage;
+                              switch (e.code) {
+                                case 'account-exists-with-different-credential':
+                                  errorMessage =
+                                      'Account exists with a different sign-in method. Try another method.';
+                                  break;
+                                case 'invalid-credential':
+                                  errorMessage =
+                                      'Invalid Facebook credentials. Please try again.';
+                                  break;
+                                default:
+                                  errorMessage =
+                                      'Facebook Sign-In failed: ${e.message ?? "Unknown error"}. Details: ${e.details ?? "No details"}';
+                              }
+                              print(
+                                'Facebook Sign-In error: ${e.code} - ${e.message} - ${e.details}',
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(errorMessage),
+                                  backgroundColor: Colors.red,
+                                  duration: const Duration(seconds: 5),
+                                ),
+                              );
+                            } catch (e) {
+                              print('Unexpected Facebook Sign-In error: $e');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Unexpected error: $e'),
+                                  backgroundColor: Colors.red,
+                                  duration: const Duration(seconds: 5),
+                                ),
+                              );
+                            }
+                          },
                         ),
                         SizedBox(height: 8.h),
                         SocialButton(
                           asset: "assets/google.png",
                           text: "Continue With Google",
-                          onTap: () {},
+                          onTap: () async {
+                            try {
+                              final authService = ref.read(authServiceProvider);
+                              final result = await authService
+                                  .signInWithGoogle();
+                              if (result == null) return; // User cancelled
+
+                              final user = result['user'] as User;
+                              final isNewUser = result['isNewUser'] as bool;
+
+                              if (isNewUser) {
+                                // Navigate to RegisterScreen for new users
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        FillYourInfoScreen(email: ""),
+                                  ),
+                                );
+                              } else {
+                                // Navigate to home screen for existing users
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/home',
+                                );
+                              }
+                            } on PlatformException catch (e) {
+                              String errorMessage;
+                              switch (e.code) {
+                                case 'sign_in_failed':
+                                  errorMessage =
+                                      'Google Sign-In failed. Check your configuration or try again. Details: ${e.details ?? "No additional details"}';
+                                  break;
+                                case 'api_exception':
+                                  errorMessage =
+                                      'Google API error (Code ${e.code}). Check OAuth credentials or SHA keys. Details: ${e.details ?? "No additional details"}';
+                                  break;
+                                case 'network_error':
+                                  errorMessage =
+                                      'Network error. Please check your internet connection.';
+                                  break;
+                                default:
+                                  errorMessage =
+                                      'Google Sign-In failed: ${e.message ?? "Unknown error"}. Details: ${e.details ?? "No details"}';
+                              }
+                              print(
+                                'Google Sign-In error: ${e.code} - ${e.message} - ${e.details}',
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(errorMessage),
+                                  backgroundColor: Colors.red,
+                                  duration: const Duration(seconds: 5),
+                                ),
+                              );
+                            } catch (e) {
+                              print('Unexpected Google Sign-In error: $e');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Unexpected error: $e'),
+                                  backgroundColor: Colors.red,
+                                  duration: const Duration(seconds: 5),
+                                ),
+                              );
+                            }
+                          },
                         ),
                         SizedBox(height: 8.h),
                         SocialButton(
@@ -109,7 +240,7 @@ class LoginScreen extends ConsumerWidget {
                           children: [
                             Expanded(
                               child: Divider(
-                                color: const Color(0XFFF0F0F0BF),
+                                color: const Color(0xFFF0F0F0BF),
                                 thickness: 2,
                               ),
                             ),
@@ -126,7 +257,7 @@ class LoginScreen extends ConsumerWidget {
                             ),
                             Expanded(
                               child: Divider(
-                                color: const Color(0XFFF0F0F0BF),
+                                color: const Color(0xFFF0F0F0BF),
                                 thickness: 2,
                               ),
                             ),
@@ -144,7 +275,12 @@ class LoginScreen extends ConsumerWidget {
                               ),
                             ),
                             onPressed: () {
-                              // TODO: Navigate to password screen
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const RegisterScreen(),
+                                ),
+                              );
                             },
                             child: Text(
                               "SIGN IN WITH PASSWORD",
@@ -174,7 +310,7 @@ class LoginScreen extends ConsumerWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const RegisterScreen(),
+                                        const FillYourInfoScreen(email: ""),
                                   ),
                                 );
                               },

@@ -1,9 +1,12 @@
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salonix/screens/home_screen.dart';
 import 'package:salonix/services/Authentication/auth_service.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 final profileFormProvider =
     StateNotifierProvider<ProfileFormNotifier, ProfileFormState>((ref) {
@@ -13,34 +16,42 @@ final profileFormProvider =
 class ProfileFormState {
   final String name;
   final String email;
+  final String password;
   final String dob;
   final String city;
   final String phone;
   final String gender;
+  final bool isLoading;
 
   ProfileFormState({
     this.name = '',
     this.email = '',
+    this.password = '',
     this.dob = '',
     this.city = '',
     this.phone = '',
     this.gender = '',
+    this.isLoading = false,
   });
 
   ProfileFormState copyWith({
     String? name,
     String? email,
+    String? password,
     String? dob,
     String? city,
     String? phone,
     String? gender,
+    bool? isLoading,
   }) => ProfileFormState(
     name: name ?? this.name,
     email: email ?? this.email,
+    password: password ?? this.password,
     dob: dob ?? this.dob,
     city: city ?? this.city,
     phone: phone ?? this.phone,
     gender: gender ?? this.gender,
+    isLoading: isLoading ?? this.isLoading,
   );
 }
 
@@ -50,19 +61,27 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
   void update({
     String? name,
     String? email,
+    String? password,
     String? dob,
     String? city,
     String? phone,
     String? gender,
+    bool? isLoading,
   }) {
     state = state.copyWith(
       name: name,
       email: email,
+      password: password,
       dob: dob,
       city: city,
       phone: phone,
       gender: gender,
+      isLoading: isLoading,
     );
+  }
+
+  void setLoading(bool loading) {
+    state = state.copyWith(isLoading: loading);
   }
 }
 
@@ -73,27 +92,145 @@ class FillYourInfoScreen extends ConsumerWidget {
   Future<void> _submitProfile(
     BuildContext context,
     ProfileFormState form,
+    WidgetRef ref,
   ) async {
-    final data = {
-      'name': form.name.trim(),
-      'email': form.email.trim(),
-      'dob': form.dob.trim(),
-      'city': form.city.trim(),
-      'phone': form.phone.trim(),
-      'gender': form.gender.trim(),
-    };
+    final notifier = ref.read(profileFormProvider.notifier);
+
+    // Validation (keep existing validation code)
+    if (form.name.trim().isEmpty ||
+        form.email.trim().isEmpty ||
+        form.password.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Please fill all required fields (Name, Email, Password)",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Set loading state
+    notifier.setLoading(true);
 
     try {
-      await AuthService().updateUserProfile(data);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      final authService = AuthService();
+
+      // Always create a new user (don't check for currentUser)
+      print("Creating new user with email: ${form.email.trim()}");
+
+      User? user = await authService.registerWithEmail(
+        form.email.trim(),
+        form.password.trim(),
       );
+
+      if (user == null) {
+        throw Exception("Failed to create user account");
+      }
+
+      print("User created successfully with UID: ${user.uid}");
+
+      // Update Firebase Auth display name
+      await user.updateDisplayName(form.name.trim());
+
+      // Force reload to get updated user data
+      await user.reload();
+      user = FirebaseAuth.instance.currentUser;
+
+      // Prepare user profile data
+      Map<String, dynamic> profileData = {
+        'name': form.name.trim(),
+        'email': form.email.trim(),
+        'dob': form.dob.trim().isNotEmpty ? form.dob.trim() : null,
+        'city': form.city.trim().isNotEmpty ? form.city.trim() : null,
+        'phone': form.phone.trim().isNotEmpty ? form.phone.trim() : null,
+        'gender': form.gender.trim().isNotEmpty ? form.gender.trim() : null,
+        'uid': user!.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      print("Saving profile data to Firestore: $profileData");
+
+      // Create user profile in Firestore
+      await authService.updateUserProfile(profileData);
+
+      print("Profile data saved successfully");
+
+      // Verify data was saved
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (doc.exists) {
+        print("Firestore document exists: ${doc.data()}");
+      } else {
+        print("Warning: Firestore document does not exist!");
+      }
+
+      // Set loading to false before navigation
+      notifier.setLoading(false);
+
+      // Show success message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Profile created successfully!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate to HomeScreen after a short delay
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      notifier.setLoading(false);
+      print("FirebaseAuthException: ${e.code} - ${e.message}");
+
+      String errorMessage;
+      switch (e.code) {
+        case 'email-already-in-use':
+          errorMessage = "An account with this email already exists";
+          break;
+        case 'weak-password':
+          errorMessage = "Password is too weak";
+          break;
+        case 'invalid-email':
+          errorMessage = "Invalid email address";
+          break;
+        case 'network-request-failed':
+          errorMessage = "Network error. Please check your connection";
+          break;
+        default:
+          errorMessage = e.message ?? "Authentication failed";
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+        );
+      }
     } catch (e) {
-      print("Failed to update profile: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to update profile.")),
-      );
+      notifier.setLoading(false);
+      print("General error: $e");
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to create profile: ${e.toString()}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -197,17 +334,23 @@ class FillYourInfoScreen extends ConsumerWidget {
                     ),
                     SizedBox(height: screenHeight * 0.038),
                     _ProfileInputField(
-                      hint: 'Name',
+                      hint: 'Name*',
                       controllerValue: form.name,
                       onChanged: (val) => notifier.update(name: val),
                     ),
                     SizedBox(height: 16.h),
                     _ProfileInputField(
-                      hint: 'Email',
+                      hint: 'Email*',
                       controllerValue: form.email,
                       onChanged: (val) => notifier.update(email: val),
                       keyboardType: TextInputType.emailAddress,
-                      readOnly: true,
+                    ),
+                    SizedBox(height: 16.h),
+                    _ProfileInputField(
+                      hint: 'Password*',
+                      controllerValue: form.password,
+                      onChanged: (val) => notifier.update(password: val),
+                      isPassword: true,
                     ),
                     SizedBox(height: 16.h),
                     _ProfileInputField(
@@ -305,20 +448,33 @@ class FillYourInfoScreen extends ConsumerWidget {
                       height: 50.h,
                       child: TextButton(
                         style: TextButton.styleFrom(
-                          backgroundColor: const Color(0xFFF4B860),
+                          backgroundColor: form.isLoading
+                              ? const Color(0xFFF4B860).withOpacity(0.6)
+                              : const Color(0xFFF4B860),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(28),
                           ),
                         ),
-                        onPressed: () => _submitProfile(context, form),
-                        child: Text(
-                          "GET START",
-                          style: TextStyle(
-                            color: const Color(0xFF4A5859),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 17.sp,
-                          ),
-                        ),
+                        onPressed: form.isLoading
+                            ? null
+                            : () => _submitProfile(context, form, ref),
+                        child: form.isLoading
+                            ? SizedBox(
+                                width: 20.w,
+                                height: 20.w,
+                                child: const CircularProgressIndicator(
+                                  color: Color(0xFF4A5859),
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                "GET START",
+                                style: TextStyle(
+                                  color: const Color(0xFF4A5859),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 17.sp,
+                                ),
+                              ),
                       ),
                     ),
                     SizedBox(height: 18.h),
@@ -333,7 +489,7 @@ class FillYourInfoScreen extends ConsumerWidget {
   }
 }
 
-class _ProfileInputField extends StatefulWidget {
+class _ProfileInputField extends ConsumerStatefulWidget {
   final String hint;
   final String controllerValue;
   final ValueChanged<String>? onChanged;
@@ -342,6 +498,7 @@ class _ProfileInputField extends StatefulWidget {
   final IconData? trailingIcon;
   final String? trailingImage;
   final TextInputType? keyboardType;
+  final bool isPassword;
 
   const _ProfileInputField({
     required this.hint,
@@ -352,19 +509,22 @@ class _ProfileInputField extends StatefulWidget {
     this.trailingIcon,
     this.trailingImage,
     this.keyboardType,
+    this.isPassword = false,
   });
 
   @override
-  State<_ProfileInputField> createState() => _ProfileInputFieldState();
+  ConsumerState<_ProfileInputField> createState() => _ProfileInputFieldState();
 }
 
-class _ProfileInputFieldState extends State<_ProfileInputField> {
+class _ProfileInputFieldState extends ConsumerState<_ProfileInputField> {
   late TextEditingController _controller;
+  bool _obscureText = true;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.controllerValue);
+    _obscureText = widget.isPassword;
   }
 
   @override
@@ -426,9 +586,23 @@ class _ProfileInputFieldState extends State<_ProfileInputField> {
                   onChanged: widget.onChanged,
                   keyboardType: widget.keyboardType,
                   cursorColor: const Color(0xFFF4B860),
+                  obscureText: widget.isPassword && _obscureText,
                 ),
               ),
-              if (widget.trailingImage != null)
+              if (widget.isPassword)
+                IconButton(
+                  icon: Icon(
+                    _obscureText ? LucideIcons.eyeOff : LucideIcons.eye,
+                    color: Colors.white70,
+                    size: 21.sp,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                )
+              else if (widget.trailingImage != null)
                 Image.asset(
                   widget.trailingImage!,
                   width: 20.w,
