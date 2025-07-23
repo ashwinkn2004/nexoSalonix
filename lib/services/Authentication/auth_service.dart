@@ -4,26 +4,43 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+/// Authentication service handling all auth methods (Email, Google, Facebook, Apple)
 class AuthService {
+  // Firebase instances
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Local storage
   final Box _authBox = Hive.box('authBox');
 
-  /// Initialize Hive for auth persistence
+  /* ==================== INITIALIZATION ==================== */
+
+  /// Initializes Hive for local storage
   static Future<void> initHive() async {
     await Hive.initFlutter();
     await Hive.openBox('authBox');
   }
 
-  /// Check if user is logged in (from Hive)
+  /* ==================== AUTH STATE GETTERS ==================== */
+
+  /// Checks if user is logged in (from local storage)
   bool get isLoggedIn =>
       _authBox.get('isLoggedIn', defaultValue: false) as bool;
 
-  /// Get stored user ID from Hive
+  /// Gets stored user ID from local storage
   String? get userId => _authBox.get('userId') as String?;
 
-  /// Register with email & password
+  /// Gets current Firebase user
+  User? get currentUser => _auth.currentUser;
+
+  /// Stream of auth state changes
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  /* ==================== EMAIL/PASSWORD AUTH ==================== */
+
+  /// Registers new user with email and password
   Future<User?> registerWithEmail(String email, String password) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
@@ -42,7 +59,7 @@ class AuthService {
     }
   }
 
-  /// Login with email & password
+  /// Logs in user with email and password
   Future<User?> loginWithEmail(String email, String password) async {
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
@@ -61,7 +78,7 @@ class AuthService {
     }
   }
 
-  /// Handle Sign In with validation
+  /// Handles sign-in with validation
   Future<Map<String, dynamic>> handleSignIn(
     String email,
     String password,
@@ -84,7 +101,9 @@ class AuthService {
     }
   }
 
-  /// Google Sign-In
+  /* ==================== SOCIAL AUTHENTICATION ==================== */
+
+  /// Google Sign-In implementation
   Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
@@ -126,7 +145,7 @@ class AuthService {
     }
   }
 
-  /// Facebook Sign-In
+  /// Facebook Sign-In implementation
   Future<Map<String, dynamic>?> signInWithFacebook() async {
     try {
       // Trigger the login flow
@@ -146,7 +165,7 @@ class AuthService {
         loginResult.accessToken!.tokenString,
       );
 
-      // Once signed in, return the UserCredential
+      // Sign in with credential
       final userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user;
 
@@ -182,7 +201,67 @@ class AuthService {
     }
   }
 
-  /// Send password reset email
+  /// Apple Sign-In implementation
+  Future<Map<String, dynamic>?> signInWithApple() async {
+    try {
+      // 1. Trigger Apple Sign-In flow
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        // Required for web (replace with your values)
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'com.your.app.identifier', // Your Apple Service ID
+          redirectUri: Uri.parse('https://your-domain.com/auth/apple'),
+        ),
+      );
+
+      // 2. Create Firebase credential
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      // 3. Sign in to Firebase
+      final userCredential = await _auth.signInWithCredential(oauthCredential);
+      final user = userCredential.user;
+
+      if (user != null) {
+        _saveAuthState(user.uid);
+
+        // 4. Create user document if new user
+        if (userCredential.additionalUserInfo?.isNewUser ?? false) {
+          await _createUserDocument(
+            user.uid,
+            appleCredential.email ?? user.email,
+            _getAppleDisplayName(appleCredential),
+            null, // Apple doesn't provide profile photos
+            'apple.com',
+          );
+        }
+
+        return {
+          'user': user,
+          'isNewUser': userCredential.additionalUserInfo?.isNewUser ?? false,
+        };
+      }
+      return null;
+    } on SignInWithAppleAuthorizationException catch (e) {
+      throw FirebaseAuthException(code: 'APPLE_AUTH_ERROR', message: e.message);
+    } on FirebaseAuthException catch (e) {
+      rethrow;
+    } catch (e) {
+      throw FirebaseAuthException(
+        code: 'APPLE_AUTH_UNKNOWN',
+        message: 'Apple sign in failed',
+      );
+    }
+  }
+
+  /* ==================== USER MANAGEMENT ==================== */
+
+  /// Sends password reset email
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
@@ -192,7 +271,7 @@ class AuthService {
     }
   }
 
-  /// Update user profile in Firestore
+  /// Updates user profile in Firestore
   Future<void> updateUserProfile(Map<String, dynamic> profileData) async {
     try {
       final user = _auth.currentUser;
@@ -208,7 +287,7 @@ class AuthService {
     }
   }
 
-  /// Logout
+  /// Logs out user from all services
   Future<void> signOut() async {
     try {
       await _auth.signOut();
@@ -221,22 +300,20 @@ class AuthService {
     }
   }
 
-  /// Get current user
-  User? get currentUser => _auth.currentUser;
+  /* ==================== HELPER METHODS ==================== */
 
-  /// Stream of auth state changes
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
-
-  // Helper methods
+  /// Saves auth state to local storage
   Future<void> _saveAuthState(String userId) async {
     await _authBox.put('isLoggedIn', true);
     await _authBox.put('userId', userId);
   }
 
+  /// Clears auth state from local storage
   Future<void> _clearAuthState() async {
     await _authBox.clear();
   }
 
+  /// Creates user document in Firestore
   Future<void> _createUserDocument(
     String uid,
     String? email,
@@ -255,6 +332,15 @@ class AuthService {
     });
   }
 
+  /// Extracts display name from Apple credentials
+  String? _getAppleDisplayName(AuthorizationCredentialAppleID credential) {
+    if (credential.givenName != null && credential.familyName != null) {
+      return '${credential.givenName} ${credential.familyName}';
+    }
+    return null;
+  }
+
+  /// Converts Firebase auth errors to user-friendly messages
   String _getAuthErrorMessage(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
