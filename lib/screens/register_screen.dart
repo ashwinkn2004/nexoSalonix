@@ -94,7 +94,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Facebook login failed: ${e.toString()}')),
+          SnackBar(content: Text('Facebook login failed')),
+          
         );
       }
     } finally {

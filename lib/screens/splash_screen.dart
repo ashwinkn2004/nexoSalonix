@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salonix/consts.dart';
@@ -24,9 +25,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
 
-    final isLoggedIn = ref.read(authProvider);
+    final user = FirebaseAuth.instance.currentUser;
+
     Navigator.of(context).pushReplacement(
-      isLoggedIn
+      user != null
           ? MaterialPageRoute(builder: (_) => const HomeScreen())
           : PageRouteBuilder(
               transitionDuration: const Duration(milliseconds: 1200),
@@ -44,7 +46,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                             curve: Curves.easeInOut,
                           ),
                         );
-
                     return Stack(
                       children: [
                         child,

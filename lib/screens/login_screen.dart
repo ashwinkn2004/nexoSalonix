@@ -135,24 +135,25 @@ class LoginScreen extends ConsumerWidget {
                                   break;
                                 default:
                                   errorMessage =
-                                      'Facebook Sign-In failed: ${e.message ?? "Unknown error"}. Details: ${e.details ?? "No details"}';
+                                      'Facebook Sign-In failed"}';
                               }
                               print(
-                                'Facebook Sign-In error: ${e.code} - ${e.message} - ${e.details}',
+                                'Facebook Sign-In error',
                               );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(errorMessage),
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: const Color(0xFFF4B860),
                                   duration: const Duration(seconds: 5),
                                 ),
                               );
                             } catch (e) {
-                              print('Unexpected Facebook Sign-In error: $e');
+                              print('Unexpected Facebook Sign-In error');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Unexpected error: $e'),
-                                  backgroundColor: Colors.red,
+                                  content: Text('Unexpected error'),
+                                  backgroundColor: const Color(0xFFF4B860),
+                                  
                                   duration: const Duration(seconds: 5),
                                 ),
                               );
@@ -168,24 +169,34 @@ class LoginScreen extends ConsumerWidget {
                               final authService = ref.read(authServiceProvider);
                               final result = await authService
                                   .signInWithGoogle();
+
                               if (result == null) return; // User cancelled
+
+                              // Handle error (e.g., existing email-password account)
+                              if (result.containsKey('error')) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(result['error']),
+                                    backgroundColor:const Color(0xFFF4B860),
+                                  ),
+                                );
+                                return;
+                              }
 
                               final user = result['user'] as User;
                               final isNewUser = result['isNewUser'] as bool;
-                              final email = result['email'] as String? ?? '';
-                              final name = result['name'] as String? ?? '';
 
                               if (isNewUser) {
-                                // Navigate to FillYourInfoScreen for new users
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => HomeScreen(),
+                                    builder: (context) => FillYourInfoScreen(
+                                      email: user.email ?? '',
+                                    ),
                                   ),
                                 );
                               } else {
-                                // Navigate to home screen for existing users
-                                Navigator.push(
+                                Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => HomeScreen(),
@@ -204,13 +215,12 @@ class LoginScreen extends ConsumerWidget {
                                       'Network error. Please check your internet connection.';
                                   break;
                                 default:
-                                  errorMessage =
-                                      'Google Sign-In failed: ${e.message ?? "Unknown error"}';
+                                  errorMessage = 'Google Sign-In failed';
                               }
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(errorMessage),
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: const Color(0xFFF4B860),
                                 ),
                               );
                             } catch (e) {
@@ -219,7 +229,7 @@ class LoginScreen extends ConsumerWidget {
                                   content: Text(
                                     'An error occurred during Google Sign-In',
                                   ),
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: const Color(0xFFF4B860),
                                 ),
                               );
                             }

@@ -1,3 +1,4 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -21,6 +22,17 @@ class AuthService {
   static Future<void> initHive() async {
     await Hive.initFlutter();
     await Hive.openBox('authBox');
+  }
+
+  /// Initializes and validates authentication state
+  Future<void> initializeAuth() async {
+    _auth.authStateChanges().listen((User? user) async {
+      if (user == null) {
+        await _clearAuthState(); // Clear local state if no user
+      } else {
+        await _saveAuthState(user.uid); // Update local state if user exists
+      }
+    });
   }
 
   /* ==================== AUTH STATE GETTERS ==================== */
@@ -106,24 +118,54 @@ class AuthService {
   /// Google Sign-In implementation
   Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
+      // Step 1: Trigger Google Sign-In flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return null;
+      if (googleUser == null) {
+        print('Google sign-in aborted by user');
+        return {'error': 'Google sign-in aborted'};
+      }
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
+      final String? email = googleUser.email;
+      if (email == null) {
+        print('Google account email not found');
+        return {'error': 'Google account email not found'};
+      }
+
+      // Step 2: Check if email is already registered with another provider
+      print('Checking sign-in methods for email: $email');
+      final List<String> signInMethods =
+          await _auth.fetchSignInMethodsForEmail(email);
+      print('Sign-in methods found: $signInMethods');
+
+      if (signInMethods.isNotEmpty && signInMethods.contains('password')) {
+        print(
+            'Email $email is already registered with email/password provider');
+        await GoogleSignIn().signOut(); // Ensure Google session is cleared
+        return {
+          'error':
+              'An account with this email already exists. Please log in using your email and password or use a different Google account.',
+        };
+      }
+
+      // Step 3: Proceed with Google sign-in only if no conflicting provider exists
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
+      print('Attempting to sign in with Google credential');
       final userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user;
 
       if (user != null) {
+        print('Google sign-in successful for user: ${user.uid}');
         _saveAuthState(user.uid);
 
         if (userCredential.additionalUserInfo?.isNewUser ?? false) {
+          print('Creating Firestore document for new user: ${user.uid}');
           await _createUserDocument(
             user.uid,
             user.email,
@@ -138,10 +180,23 @@ class AuthService {
           'isNewUser': userCredential.additionalUserInfo?.isNewUser ?? false,
         };
       }
-      return null;
+
+      print('Google sign-in failed: No user returned');
+      return {'error': 'Google sign-in failed'};
+    } on FirebaseAuthException catch (e) {
+      print('Google sign-in FirebaseAuthException: ${e.code} - ${e.message}');
+      await GoogleSignIn().signOut(); // Clear Google session on error
+      if (e.code == 'account-exists-with-different-credential') {
+        return {
+          'error':
+              'An account with this email already exists. Please log in using your email and password or use a different Google account.',
+        };
+      }
+      return {'error': 'Google sign-in failed: ${e.message}'};
     } catch (e) {
-      print('Google sign in error: $e');
-      rethrow;
+      print('Unexpected Google sign-in error: $e');
+      await GoogleSignIn().signOut(); // Clear Google session on error
+      return {'error': 'Google sign-in failed: ${e.toString()}'};
     }
   }
 

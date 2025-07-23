@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:salonix/provider/saloon_provider.dart';
+import 'package:salonix/screens/profile_screen.dart';
 import 'package:salonix/widgets/saloon_card_widget.dart';
 
 import '../widgets/location_header.dart';
@@ -25,11 +26,9 @@ class HomeScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFF32373D),
       body: Stack(
         children: [
-          // Main content under SafeArea
           SafeArea(
             child: CustomScrollView(
               slivers: [
-                // Location header
                 SliverAppBar(
                   automaticallyImplyLeading: false,
                   backgroundColor: const Color(0xFF32373D),
@@ -38,8 +37,6 @@ class HomeScreen extends ConsumerWidget {
                   toolbarHeight: screenHeight * 0.08,
                   flexibleSpace: const LocationHeader(),
                 ),
-
-                // Search bar
                 SliverAppBar(
                   automaticallyImplyLeading: false,
                   backgroundColor: const Color(0xFF32373D),
@@ -48,8 +45,6 @@ class HomeScreen extends ConsumerWidget {
                   toolbarHeight: screenHeight * 0.085,
                   flexibleSpace: custom_widgets.SearchBar(),
                 ),
-
-                // Salon Sections
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
@@ -86,8 +81,6 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
           ),
-
-          // Top blur effect (outside safe area)
           Positioned(
             top: 0,
             left: 0,
@@ -102,7 +95,25 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNavBar(),
+
+      /// ✅ FIXED Bottom Nav Bar
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: 0, // Home index
+        onTap: (int index) {
+          if (index == 0) return; // Already on Home
+
+          switch (index) {
+            case 1:
+              Navigator.pushNamed(context, '/bookings');
+              break;
+            case 2:
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+              break;
+            default:
+              break;
+          }
+        },
+      ),
     );
   }
 }
