@@ -139,7 +139,12 @@ class LoginScreen extends ConsumerWidget {
                               print('Facebook Sign-In error');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(errorMessage),
+                                  content: Text(
+                                    errorMessage,
+                                    style: TextStyle(
+                                      color: const Color(0xFF32373D),
+                                    ),
+                                  ),
                                   backgroundColor: const Color(0xFFF4B860),
                                   duration: const Duration(seconds: 5),
                                 ),
@@ -148,7 +153,12 @@ class LoginScreen extends ConsumerWidget {
                               print('Unexpected Facebook Sign-In error');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Unexpected error'),
+                                  content: Text(
+                                    'Unexpected error',
+                                    style: TextStyle(
+                                      color: const Color(0xFF32373D),
+                                    ),
+                                  ),
                                   backgroundColor: const Color(0xFFF4B860),
 
                                   duration: const Duration(seconds: 5),
@@ -173,7 +183,12 @@ class LoginScreen extends ConsumerWidget {
                               if (result.containsKey('error')) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(result['error']),
+                                    content: Text(
+                                      result['error'],
+                                      style: TextStyle(
+                                        color: const Color(0xFF32373D),
+                                      ),
+                                    ),
                                     backgroundColor: const Color(0xFFF4B860),
                                   ),
                                 );
@@ -222,7 +237,12 @@ class LoginScreen extends ConsumerWidget {
                               }
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(errorMessage),
+                                  content: Text(
+                                    errorMessage,
+                                    style: TextStyle(
+                                      color: const Color(0xFF32373D),
+                                    ),
+                                  ),
                                   backgroundColor: const Color(0xFFF4B860),
                                 ),
                               );
@@ -231,6 +251,9 @@ class LoginScreen extends ConsumerWidget {
                                 SnackBar(
                                   content: Text(
                                     'An error occurred during Google Sign-In',
+                                    style: TextStyle(
+                                      color: const Color(0xFF32373D),
+                                    ),
                                   ),
                                   backgroundColor: const Color(0xFFF4B860),
                                 ),

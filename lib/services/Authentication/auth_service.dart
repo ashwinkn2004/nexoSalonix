@@ -1,4 +1,3 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -119,7 +118,9 @@ class AuthService {
   Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
       // Step 1: Trigger Google Sign-In flow
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+      await _googleSignIn.disconnect(); // Force showing account picker
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         print('Google sign-in aborted by user');
         return {'error': 'Google sign-in aborted'};
@@ -136,13 +137,15 @@ class AuthService {
 
       // Step 2: Check if email is already registered with another provider
       print('Checking sign-in methods for email: $email');
-      final List<String> signInMethods =
-          await _auth.fetchSignInMethodsForEmail(email);
+      final List<String> signInMethods = await _auth.fetchSignInMethodsForEmail(
+        email,
+      );
       print('Sign-in methods found: $signInMethods');
 
       if (signInMethods.isNotEmpty && signInMethods.contains('password')) {
         print(
-            'Email $email is already registered with email/password provider');
+          'Email $email is already registered with email/password provider',
+        );
         await GoogleSignIn().signOut(); // Ensure Google session is cleared
         return {
           'error':

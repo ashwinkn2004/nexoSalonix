@@ -45,9 +45,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       final password = passwordController.text.trim();
 
       if (email.isEmpty || password.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Please fill all fields',
+              style: TextStyle(color: const Color(0xFF32373D)),
+            ),
+            backgroundColor: Color(0xFFF4B860),
+          ),
+        );
         return;
       }
 
@@ -60,7 +66,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['error'] ?? 'Login failed')),
+          SnackBar(
+            content: Text(
+              result['error'] ?? 'Login failed',
+              style: TextStyle(color: const Color(0xFF32373D)),
+            ),
+            backgroundColor: const Color(0xFFF4B860),
+          ),
         );
       }
     } finally {
@@ -94,8 +106,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Facebook login failed')),
-          
+          SnackBar(
+            content: Text(
+              'Facebook login failed',
+              style: TextStyle(color: const Color(0xFF32373D)),
+            ),
+            backgroundColor: const Color(0xFFF4B860),
+          ),
         );
       }
     } finally {
@@ -317,7 +334,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               onTap: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Apple login coming soon'),
+                                    content: Text(
+                                      'Apple login coming soon',
+                                      style: TextStyle(
+                                        color: Color(0xFF32373D),
+                                      ),
+                                    ),
+                                    backgroundColor: Color(0xFFF4B860),
                                   ),
                                 );
                               },

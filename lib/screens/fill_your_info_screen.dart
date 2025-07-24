@@ -126,6 +126,7 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
         const SnackBar(
           content: Text(
             "Please fill all required fields (Name, Email, Password)",
+            style: TextStyle(color: const Color(0xFF32373D)),
           ),
           backgroundColor: const Color(0xFFF4B860),
         ),
@@ -199,7 +200,10 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMessage),
+            content: Text(
+              errorMessage,
+              style: TextStyle(color: const Color(0xFF32373D)),
+            ),
             backgroundColor: const Color(0xFFF4B860),
           ),
         );
@@ -209,7 +213,10 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Failed to create profile"),
+            content: Text(
+              "Failed to create profile",
+              style: TextStyle(color: const Color(0xFF32373D)),
+            ),
             backgroundColor: const Color(0xFFF4B860),
           ),
         );
