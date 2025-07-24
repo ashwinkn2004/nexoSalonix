@@ -104,11 +104,20 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.email.isNotEmpty) {
-      Future.microtask(() {
-        ref.read(profileFormProvider.notifier).update(email: widget.email);
-      });
-    }
+    Future.microtask(() {
+      ref
+          .read(profileFormProvider.notifier)
+          .update(
+            name: '',
+            email: '',
+            password: '',
+            dob: '',
+            city: '',
+            phone: '',
+            gender: '',
+            isLoading: false,
+          );
+    });
   }
 
   Future<void> _submitProfile(

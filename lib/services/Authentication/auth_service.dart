@@ -125,7 +125,7 @@ class AuthService {
         if (await _googleSignIn.isSignedIn()) {
           await _googleSignIn
               .disconnect(); // This will revoke access and force picker
-        }
+        } 
       } catch (e) {
         print('Safe ignore Google disconnect error: $e');
       }
