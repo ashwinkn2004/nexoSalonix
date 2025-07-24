@@ -104,9 +104,10 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize email in state directly
     if (widget.email.isNotEmpty) {
-      ref.read(profileFormProvider.notifier).update(email: widget.email);
+      Future.microtask(() {
+        ref.read(profileFormProvider.notifier).update(email: widget.email);
+      });
     }
   }
 
@@ -197,7 +198,10 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor:const Color(0xFFF4B860)),
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: const Color(0xFFF4B860),
+          ),
         );
       }
     } catch (e) {

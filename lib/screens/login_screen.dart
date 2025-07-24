@@ -134,12 +134,9 @@ class LoginScreen extends ConsumerWidget {
                                       'Invalid Facebook credentials. Please try again.';
                                   break;
                                 default:
-                                  errorMessage =
-                                      'Facebook Sign-In failed"}';
+                                  errorMessage = 'Facebook Sign-In failed"}';
                               }
-                              print(
-                                'Facebook Sign-In error',
-                              );
+                              print('Facebook Sign-In error');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(errorMessage),
@@ -153,7 +150,7 @@ class LoginScreen extends ConsumerWidget {
                                 SnackBar(
                                   content: Text('Unexpected error'),
                                   backgroundColor: const Color(0xFFF4B860),
-                                  
+
                                   duration: const Duration(seconds: 5),
                                 ),
                               );
@@ -177,7 +174,7 @@ class LoginScreen extends ConsumerWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(result['error']),
-                                    backgroundColor:const Color(0xFFF4B860),
+                                    backgroundColor: const Color(0xFFF4B860),
                                   ),
                                 );
                                 return;
@@ -187,12 +184,18 @@ class LoginScreen extends ConsumerWidget {
                               final isNewUser = result['isNewUser'] as bool;
 
                               if (isNewUser) {
-                                Navigator.pushReplacement(
+                                /*Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => FillYourInfoScreen(
                                       email: user.email ?? '',
                                     ),
+                                  ),
+                                );*/
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => HomeScreen(),
                                   ),
                                 );
                               } else {

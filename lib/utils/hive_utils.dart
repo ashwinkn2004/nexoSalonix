@@ -15,6 +15,8 @@ class HiveUtils {
     await box.put(isLoggedInKey, value);
     if (userId != null) {
       await box.put(userIdKey, userId);
+    } else {
+      await box.clear();
     }
   }
 
