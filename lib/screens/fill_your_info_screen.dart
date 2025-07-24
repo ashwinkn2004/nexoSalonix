@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salonix/screens/register_screen.dart';
+import 'package:salonix/screens/verify_email.dart';
 import 'package:salonix/services/Authentication/auth_service.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -127,7 +128,6 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
   ) async {
     final notifier = ref.read(profileFormProvider.notifier);
 
-    // Validation
     if (form.name.trim().isEmpty ||
         form.email.trim().isEmpty ||
         form.password.trim().isEmpty) {
@@ -135,9 +135,9 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
         const SnackBar(
           content: Text(
             "Please fill all required fields (Name, Email, Password)",
-            style: TextStyle(color: const Color(0xFF32373D)),
+            style: TextStyle(color: Color(0xFF32373D)),
           ),
-          backgroundColor: const Color(0xFFF4B860),
+          backgroundColor: Color(0xFFF4B860),
         ),
       );
       return;
@@ -160,7 +160,10 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
       await user.updateDisplayName(form.name.trim());
       await user.reload();
 
-      // Prepare user profile data
+      // Send verification email
+      await user.sendEmailVerification();
+
+      // Store user profile in Firestore
       final profileData = {
         'name': form.name.trim(),
         'email': form.email.trim(),
@@ -172,8 +175,6 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
-
-      // Create user profile in Firestore
       await authService.updateUserProfile(profileData);
 
       notifier.update(isLoading: false);
@@ -182,17 +183,16 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Profile created successfully!"),
+          content: Text("Verification email sent! Please verify your email."),
           backgroundColor: Colors.green,
         ),
       );
 
-      // Navigate to RegisterScreen after a short delay
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Navigate to email verification screen
       if (context.mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+          MaterialPageRoute(builder: (_) => const EmailVerificationScreen()),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -211,7 +211,7 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
           SnackBar(
             content: Text(
               errorMessage,
-              style: TextStyle(color: const Color(0xFF32373D)),
+              style: const TextStyle(color: Color(0xFF32373D)),
             ),
             backgroundColor: const Color(0xFFF4B860),
           ),
@@ -221,12 +221,12 @@ class _FillYourInfoScreenState extends ConsumerState<FillYourInfoScreen> {
       notifier.update(isLoading: false);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text(
               "Failed to create profile",
-              style: TextStyle(color: const Color(0xFF32373D)),
+              style: TextStyle(color: Color(0xFF32373D)),
             ),
-            backgroundColor: const Color(0xFFF4B860),
+            backgroundColor: Color(0xFFF4B860),
           ),
         );
       }
