@@ -119,7 +119,17 @@ class AuthService {
     try {
       // Step 1: Trigger Google Sign-In flow
       final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
-      await _googleSignIn.disconnect(); // Force showing account picker
+
+      // Force account picker if previously signed in
+      try {
+        if (await _googleSignIn.isSignedIn()) {
+          await _googleSignIn
+              .disconnect(); // This will revoke access and force picker
+        }
+      } catch (e) {
+        print('Safe ignore Google disconnect error: $e');
+      }
+
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         print('Google sign-in aborted by user');
