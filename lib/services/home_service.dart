@@ -1,143 +1,168 @@
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:math' as math;
 
-class SalonService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  // === 1. Get Current Position ===
+class HomeService {
+  // 1. Get the user's current GPS location
   Future<Position> getCurrentPosition() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw Exception('Location services are disabled.');
     }
 
-    LocationPermission permission = await Geolocator.checkPermission();
+    // Check and request permission
+    permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        throw Exception('Location permission denied');
+        throw Exception('Location permissions are denied.');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      throw Exception('Location permissions are permanently denied');
+      throw Exception('Location permissions are permanently denied.');
     }
 
+    // Get current position
     return await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
   }
 
-  // === 2. Convert position to city ===
+  // 2. Convert position to city name
   Future<String> getCityFromPosition(Position position) async {
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-      position.latitude,
-      position.longitude,
-    );
-    if (placemarks.isNotEmpty) {
-      return placemarks.first.locality ?? 'Unknown';
-    }
-    return 'Unknown';
-  }
-
-  // === 3. Convert address/pincode to position ===
-  Future<Position> getPositionFromAddress(String address) async {
-    List<Location> locations = await locationFromAddress(address);
-    if (locations.isEmpty) {
-      throw Exception('No matching location found for address');
-    }
-
-    final loc = locations.first;
-    return Position(
-      latitude: loc.latitude,
-      longitude: loc.longitude,
-      timestamp: DateTime.now(),
-      accuracy: 0,
-      altitude: 0,
-      heading: 0,
-      speed: 0,
-      speedAccuracy: 0,
-      altitudeAccuracy: 0,
-      headingAccuracy: 0,
-    );
-  }
-
-  // === 4. Convert pincode to position ===
-  Future<Position> getPositionFromPincode(String pincode) {
-    return getPositionFromAddress(pincode);
-  }
-
-  // === 5. Get city from coordinates ===
-  Future<String> getCityFromCoordinates(Position position) {
-    return getCityFromPosition(position);
-  }
-
-  // === 6. Calculate distance using Haversine ===
-  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const R = 6371; // Earth radius in km
-    final dLat = _degToRad(lat2 - lat1);
-    final dLon = _degToRad(lon2 - lon1);
-
-    final a =
-        sin(dLat / 2) * sin(dLat / 2) +
-        cos(_degToRad(lat1)) *
-            cos(_degToRad(lat2)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return R * c;
-  }
-
-  double _degToRad(double deg) => deg * pi / 180;
-
-  // === 7. Get nearby salons within 10 km ===
-  Future<List<Map<String, dynamic>>> getNearbySalons(Position userPos) async {
-    final snapshot = await _firestore
-        .collection('salons')
-        .where('isApproved', isEqualTo: true)
-        .get(const GetOptions(source: Source.server));
-
-    final List<Map<String, dynamic>> nearbySalons = [];
-
-    for (final doc in snapshot.docs) {
-      final data = doc.data();
-      final location = data['location'];
-
-      if (location == null ||
-          location['latitude'] == null ||
-          location['longitude'] == null)
-        continue;
-
-      final lat = location['latitude'];
-      final lon = location['longitude'];
-
-      final distance = calculateDistance(
-        userPos.latitude,
-        userPos.longitude,
-        lat,
-        lon,
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
       );
-
-      if (distance <= 10) {
-        nearbySalons.add({...data, 'salonId': doc.id, 'distance': distance});
-      }
+      return placemarks.isNotEmpty
+          ? placemarks[0].locality ?? 'Unknown'
+          : 'Unknown';
+    } catch (e) {
+      print('Error in getCityFromPosition: $e');
+      return 'Unknown';
     }
-
-    return nearbySalons;
   }
 
-  // === 8. Get most visited salons nearby ===
+  // 3. Convert address or pincode to GPS coordinates
+  Future<Position> getPositionFromAddress(String address) async {
+    try {
+      List<Location> locations = await locationFromAddress(address);
+      if (locations.isEmpty) {
+        throw Exception('No location found for the address: $address');
+      }
+      return Position(
+        latitude: locations[0].latitude,
+        longitude: locations[0].longitude,
+        timestamp: DateTime.now(),
+        accuracy: 0.0,
+        altitude: 0.0,
+        heading: 0.0,
+        speed: 0.0,
+        speedAccuracy: 0.0,
+        altitudeAccuracy: 0.0,
+        headingAccuracy: 0.0,
+      );
+    } catch (e) {
+      throw Exception('Error converting address to position: $e');
+    }
+  }
+
+  // 4. Convert pincode to GPS position (calls getPositionFromAddress)
+  Future<Position> getPositionFromPincode(String pincode) async {
+    return await getPositionFromAddress(pincode);
+  }
+
+  // 5. Convert coordinates to city name (alias for getCityFromPosition)
+  Future<String> getCityFromCoordinates(Position position) async {
+    return await getCityFromPosition(position);
+  }
+
+  // 6. Calculate distance between two points using Haversine formula
+  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371; // Radius of the earth in km
+    double dLat = _degreesToRadians(lat2 - lat1);
+    double dLon = _degreesToRadians(lon2 - lon1);
+
+    double a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_degreesToRadians(lat1)) *
+            math.cos(_degreesToRadians(lat2)) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
+
+    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return earthRadius * c; // Distance in km
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * math.pi / 180;
+  }
+
+  // 7. Fetch approved salons within 10 km of the user
+  Future<List<Map<String, dynamic>>> getNearbySalons(Position userPos) async {
+    try {
+      print(
+        'Fetching nearby salons for position: ${userPos.latitude}, ${userPos.longitude}',
+      );
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('salons')
+          .where('isApproved', isEqualTo: true)
+          .get(const GetOptions(source: Source.server));
+
+      List<Map<String, dynamic>> salons = [];
+
+      for (var doc in querySnapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+        if (data['location'] != null) {
+          GeoPoint salonGeoPoint = data['location'] as GeoPoint;
+          double distance = calculateDistance(
+            userPos.latitude,
+            userPos.longitude,
+            salonGeoPoint.latitude,
+            salonGeoPoint.longitude,
+          );
+
+          if (distance <= 10) {
+            data['distance'] = distance;
+            data['salonId'] = doc.id;
+            salons.add(data);
+          }
+        } else {
+          print('Skipping salon ${doc.id}: No valid location');
+        }
+      }
+
+      print('Found ${salons.length} salons within 10 km');
+      return salons;
+    } catch (e) {
+      print('Error fetching nearby salons: $e');
+      return [];
+    }
+  }
+
+  // 8. Fetch nearby salons sorted by visitCount
   Future<List<Map<String, dynamic>>> getMostVisitedSalons(
     Position userPos,
   ) async {
-    final nearbySalons = await getNearbySalons(userPos);
-    nearbySalons.sort((a, b) {
-      final aCount = a['visitCount'] ?? 0;
-      final bCount = b['visitCount'] ?? 0;
-      return bCount.compareTo(aCount);
-    });
-    return nearbySalons;
+    try {
+      List<Map<String, dynamic>> salons = await getNearbySalons(userPos);
+      salons.sort((a, b) {
+        int visitCountA = a['visitCount'] ?? 0;
+        int visitCountB = b['visitCount'] ?? 0;
+        return visitCountB.compareTo(visitCountA); // Descending order
+      });
+      print('Sorted ${salons.length} salons by visitCount');
+      return salons;
+    } catch (e) {
+      print('Error fetching most visited salons: $e');
+      return [];
+    }
   }
 }
