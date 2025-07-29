@@ -1,25 +1,42 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:salonix/provider/home_screen_provider.dart';
 import 'package:salonix/provider/saloon_provider.dart';
 import 'package:salonix/screens/profile_screen.dart';
 import 'package:salonix/widgets/saloon_card_widget.dart';
-
 import '../widgets/location_header.dart';
 import '../widgets/search_bar.dart' as custom_widgets;
 import '../widgets/section_header.dart';
 import '../widgets/bottom_nav_bar.dart';
+import 'dart:ui';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final statusBarHeight = MediaQuery.of(context).padding.top;
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkLocationPermission();
+    });
+  }
+
+  Future<void> _checkLocationPermission() async {
+    final hasPermission = await ref.read(locationPermissionProvider.future);
+    if (hasPermission) {
+      ref.refresh(locationProvider);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final statusBarHeight = MediaQuery.of(context).padding.top;
     final salonsAsync = ref.watch(salonListProvider);
 
     return Scaffold(
@@ -34,7 +51,7 @@ class HomeScreen extends ConsumerWidget {
                   backgroundColor: const Color(0xFF32373D),
                   pinned: true,
                   elevation: 0,
-                  toolbarHeight: screenHeight * 0.08,
+                  toolbarHeight: 60.h,
                   flexibleSpace: const LocationHeader(),
                 ),
                 SliverAppBar(
@@ -42,35 +59,33 @@ class HomeScreen extends ConsumerWidget {
                   backgroundColor: const Color(0xFF32373D),
                   pinned: true,
                   elevation: 0,
-                  toolbarHeight: screenHeight * 0.085,
-                  flexibleSpace: custom_widgets.SearchBar(),
+                  toolbarHeight: 70.h,
+                  flexibleSpace: const custom_widgets.SearchBar(),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.045,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: salonsAsync.when(
                       data: (salons) => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 10.h),
-                          SectionHeader(title: "Near You"),
-                          SizedBox(height: screenHeight * 0.025),
+                          const SectionHeader(title: "Near You"),
+                          SizedBox(height: 15.h),
                           HorizontalCardList(salons: salons),
-                          SizedBox(height: screenHeight * 0.025),
-                          SectionHeader(title: "Most Visited"),
-                          SizedBox(height: screenHeight * 0.025),
+                          SizedBox(height: 15.h),
+                          const SectionHeader(title: "Most Visited"),
+                          SizedBox(height: 15.h),
                           HorizontalCardList(salons: salons),
-                          SizedBox(height: screenHeight * 0.03),
+                          SizedBox(height: 20.h),
                         ],
                       ),
                       loading: () => SizedBox(
-                        height: screenHeight * 0.5,
+                        height: 200.h,
                         child: const Center(child: CircularProgressIndicator()),
                       ),
                       error: (error, stack) => SizedBox(
-                        height: screenHeight * 0.5,
+                        height: 200.h,
                         child: Center(
                           child: Text('Error loading salons: $error'),
                         ),
@@ -95,21 +110,19 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-
-      /// ✅ FIXED Bottom Nav Bar
       bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: 0, // Home index
+        currentIndex: 0,
         onTap: (int index) {
-          if (index == 0) return; // Already on Home
-
+          if (index == 0) return;
           switch (index) {
             case 1:
               Navigator.pushNamed(context, '/bookings');
               break;
             case 2:
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
-              break;
-            default:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
               break;
           }
         },
