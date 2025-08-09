@@ -18,6 +18,18 @@ class AddressState {
     this.addressType = 'Home',
   });
 
+  // Add this toJson() method
+  Map<String, dynamic> toJson() {
+    return {
+      'addressLine1': addressLine1,
+      'addressLine2': addressLine2,
+      'pinCode': pinCode,
+      'city': city,
+      'phone': phone,
+      'addressType': addressType,
+    };
+  }
+
   AddressState copyWith({
     String? addressLine1,
     String? addressLine2,

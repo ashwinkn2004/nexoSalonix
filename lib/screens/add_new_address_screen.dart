@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:salonix/provider/adress_provider.dart';
+import 'package:salonix/services/home_service.dart';
 
 class AddAddressScreen extends ConsumerStatefulWidget {
   const AddAddressScreen({super.key});
@@ -16,6 +18,13 @@ class AddAddressScreen extends ConsumerStatefulWidget {
 class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
   bool isLoading = false;
   final List<String> addressTypes = ['Home', 'Work', 'Other'];
+  late final HomeService _homeService;
+
+  @override
+  void initState() {
+    super.initState();
+    _homeService = HomeService();
+  }
 
   Future<void> _fetchCurrentLocation() async {
     final notifier = ref.read(addressProvider.notifier);
@@ -23,47 +32,64 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
     try {
       setState(() => isLoading = true);
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Location permission denied")),
-          );
-          return;
-        }
+      // Try getting location with timeout
+      Position position;
+      try {
+        position = await _homeService.getCurrentPosition().timeout(
+          const Duration(seconds: 15),
+        );
+      } on TimeoutException {
+        // Second attempt if first times out
+        position = await _homeService.getCurrentPosition().timeout(
+          const Duration(seconds: 10),
+        );
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
+      // Get address with separate timeout
       final placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
+      ).timeout(const Duration(seconds: 10));
+
+      if (placemarks.isEmpty) throw Exception('No address found');
+
+      final place = placemarks.first;
+      notifier.updateCity(place.locality ?? '');
+      notifier.updateAddressLine1(place.street ?? '');
+      notifier.updatePinCode(place.postalCode ?? '');
+      notifier.updateAddressLine2(
+        "${place.subLocality ?? ''} ${place.administrativeArea ?? ''}".trim(),
       );
 
-      if (placemarks.isNotEmpty) {
-        final place = placemarks.first;
-
-        notifier.updateCity(place.locality ?? '');
-        notifier.updateAddressLine1(place.street ?? '');
-        notifier.updatePinCode(place.postalCode ?? '');
-        notifier.updateAddressLine2(
-          "${place.subLocality ?? ''} ${place.administrativeArea ?? ''}",
-        );
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Location updated.")));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Location updated successfully")),
+      );
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Location detection taking too long - please try again",
+          ),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      ).showSnackBar(SnackBar(content: Text(_getUserFriendlyError(e))));
     } finally {
       setState(() => isLoading = false);
     }
+  }
+
+  String _getUserFriendlyError(dynamic error) {
+    if (error.toString().contains('permission')) {
+      return 'Please enable location permissions in settings';
+    } else if (error.toString().contains('disabled')) {
+      return 'Please enable device location services';
+    } else if (error.toString().contains('timed out')) {
+      return 'Location detection took too long';
+    }
+    return 'Failed to get location: ${error.toString().replaceAll('Exception: ', '')}';
   }
 
   @override
@@ -170,7 +196,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                               ? null
                               : () {
                                   debugPrint(
-                                    "Saving address: ${state.addressLine1}",
+                                    "Saving address: ${{'addressLine1': state.addressLine1, 'city': state.city, 'pinCode': state.pinCode, 'type': state.addressType}}",
                                   );
                                 },
                           style: TextButton.styleFrom(

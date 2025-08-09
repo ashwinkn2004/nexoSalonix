@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:salonix/provider/home_screen_provider.dart';
-import 'package:salonix/widgets/location_changer_screen.dart';
+import 'package:salonix/screens/location_changer_screen.dart';
 
 class LocationHeader extends ConsumerWidget {
   const LocationHeader({super.key});
