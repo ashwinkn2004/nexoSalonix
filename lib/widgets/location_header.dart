@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:salonix/provider/home_screen_provider.dart';
+import 'package:salonix/widgets/location_changer_screen.dart';
 
 class LocationHeader extends ConsumerWidget {
   const LocationHeader({super.key});
@@ -46,6 +47,21 @@ class LocationHeader extends ConsumerWidget {
                     ),
                   ),
                 ],
+              ),
+              Transform.translate(
+                offset: Offset(0, -6.h),
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SelectLocationScreen(),
+                    ),
+                  ),
+                  icon: Image.asset(
+                    'assets/arrow_drop_up.png',
+                    width: 15.w,
+                    height: 15.h,
+                  ),
+                ),
               ),
             ],
           ),
