@@ -1,70 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../consts.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:salonix/consts.dart'; // Make sure Responsive.iconSize(context) is defined here
 
-class CustomBottomNavBar extends StatelessWidget {
-  const CustomBottomNavBar({super.key});
+class CustomBottomNavBar extends StatefulWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
 
+  const CustomBottomNavBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  @override
+  State<CustomBottomNavBar> createState() => _CustomBottomNavBarState();
+}
+
+class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    final double navSpacing = media.size.width * 0.27;   // amount of horizontal gap
+    final double navSpacing = media.size.width * 0.15;
     final double barHeight = media.size.height * 0.09;
-    final EdgeInsets padding =
-        EdgeInsets.symmetric(horizontal: media.size.width * 0.06);
-
-    final baseFontSize =
-        Theme.of(context).textTheme.labelSmall?.fontSize ?? 10;
-    final double selectedFontSize =
-        baseFontSize * media.textScaleFactor;
-    final double unselectedFontSize =
-        baseFontSize * media.textScaleFactor;
+    final EdgeInsets padding = EdgeInsets.symmetric(
+      horizontal: media.size.width * 0.06,
+    );
 
     return SafeArea(
       top: false,
       child: Container(
         height: barHeight,
-        color: const Color(0xFFF9F7F7),
+        color: const Color(0xFF4A5859),
         padding: padding,
-        child: Center(
-          child: Row(
-            children: [
-              Expanded(
-                child: _buildNavItem(
-                  context,
-                icon: Icons.home,
-                label: 'home',
-                isSelected: true,
-                selectedFontSize: selectedFontSize,
-                unselectedFontSize: unselectedFontSize,
-              ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildNavItem(context, icon: Icons.home, label: 'home', index: 0),
+            _buildNavItem(
+              context,
+              icon: Icons.search,
+              label: 'search',
+              index: 1,
             ),
-            SizedBox(width: navSpacing), 
-            Expanded(
-              child: _buildNavItem(
-                context,
-                icon: Icons.search,
-                label: 'search',
-                isSelected: false,
-                selectedFontSize: selectedFontSize,
-                unselectedFontSize: unselectedFontSize,
-              ),
-            ),
-             SizedBox(width: navSpacing),
-            Expanded(
-              child: _buildNavItem(
-                context,
-                icon: LucideIcons.userCircle2,
-                label: 'profile',
-                isSelected: false,
-                selectedFontSize: selectedFontSize,
-                unselectedFontSize: unselectedFontSize,
-              ),
+            _buildNavItem(
+              context,
+              icon: LucideIcons.userCircle2,
+              label: 'profile',
+              index: 2,
             ),
           ],
         ),
-      ),
-
       ),
     );
   }
@@ -73,31 +59,34 @@ class CustomBottomNavBar extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String label,
-    required bool isSelected,
-    required double selectedFontSize,
-    required double unselectedFontSize,
+    required int index,
   }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          color: isSelected ? const Color(0xFF3F72AF) : const Color(0xFF9E9E9E),
-          size: Responsive.iconSize(context),
-        ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontSize:
-                    isSelected ? selectedFontSize : unselectedFontSize,
-                color: isSelected
-                    ? const Color(0xFF3F72AF)
-                    : const Color(0xFF9E9E9E),
-                fontWeight: FontWeight.w500,
-              ),
-        ),
-      ],
+    final bool isSelected = widget.currentIndex == index;
+
+    return GestureDetector(
+      onTap: () => widget.onTap(index),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: isSelected
+                ? const Color(0xFFF4B860)
+                : const Color(0xFFF0F0F0),
+            size: Responsive.iconSize(context),
+          ),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              fontSize: 10.sp,
+              color: isSelected
+                  ? const Color(0xFFF4B860)
+                  : const Color(0xFFF0F0F0),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
-

@@ -13,8 +13,7 @@ class Responsive {
   /// Scales font using the shortest side and pixel density
   static double fontSize(BuildContext context, double ratio) {
     final base = MediaQuery.of(context).size.shortestSide;
-    final scale = MediaQuery.of(context).devicePixelRatio;
-    return (base / scale) * ratio;
+    return base * ratio;
   }
 
   static double padding(BuildContext context) => screenWidth(context) * 0.05;
